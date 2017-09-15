@@ -1,4 +1,5 @@
 import React from 'react';
+import { gql, ApolloClient, createNetworkInterface, ApolloProvider, graphql } from 'react-apollo';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { AppLoading, Asset, Font } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +10,15 @@ export default class App extends React.Component {
     assetsAreLoaded: false,
   };
 
+    createClient() {
+        // Initialize Apollo Client with URL to our server
+        return new ApolloClient({
+            networkInterface: createNetworkInterface({
+                uri: 'http://api.githunt.com/graphql',
+            }),
+        });
+    }
+
   componentWillMount() {
     this._loadAssetsAsync();
   }
@@ -18,6 +28,7 @@ export default class App extends React.Component {
       return <AppLoading />;
     } else {
       return (
+          <ApolloProvider client={this.createClient()}>
         <View style={styles.container}>
             {Platform.OS === 'ios'}
           {/*{Platform.OS === 'ios' && <StatusBar barStyle="default" />}*/}
@@ -25,6 +36,7 @@ export default class App extends React.Component {
             <View style={styles.statusBarUnderlay} />}
           <RootNavigation />
         </View>
+          </ApolloProvider>
       );
     }
   }

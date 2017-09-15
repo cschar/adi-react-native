@@ -5,10 +5,16 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    ActivityIndicator,
     TouchableOpacity,
     View,
-    Dimensions
+    Dimensions,
+    RefreshControl
 } from 'react-native';
+
+import { List, ListItem, Button } from 'react-native-elements';
+
+import { gql, ApolloClient, createNetworkInterface, ApolloProvider, graphql } from 'react-apollo';
 import { WebBrowser } from 'expo';
 import { MapView } from 'expo';
 import { Constants, Location, Permissions } from 'expo';
@@ -22,12 +28,76 @@ import MyLocationMapMarker from './MyLocationMapMarker'
 let { width, height } = Dimensions.get('window')
 const ASPECT_RATIO = width / height
 // const LATITUDE_DELTA = 60 //Very high zoom level
-const LATITUDE_DELTA = 0.01; 
+const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
 // const LONGITUDE_DELTA = 0.03;
 
 
 let id = 0;
+
+// Apollo Client lets you attach GraphQL queries to
+// your UI components to easily load data
+const FeedWithData = graphql(gql`{
+  feed (type: TOP, limit: 4) {
+    repository {
+      name, owner { login }
+      
+      # Uncomment the line below to get number of stars!
+      stargazers_count
+    }
+
+    postedBy { login }
+  }
+}`, { options: { notifyOnNetworkStatusChange: true } })(Feed);
+
+function Feed({ data }) {
+    return (
+        <ScrollView style={styles.container} refreshControl={
+            // This enables the pull-to-refresh functionality
+            <RefreshControl
+                refreshing={data.networkStatus === 4}
+                onRefresh={data.refetch}
+            />
+        }>
+
+
+
+            <Text>GitHunt</Text>
+            <FeedList data={data} />
+        </ScrollView>
+    );
+}
+
+function FeedList({ data }) {
+    if (data.networkStatus === 1) {
+        return <ActivityIndicator style={styles.loading} />;
+    }
+
+    if (data.error) {
+        return <Text>Error! {data.error.message}</Text>;
+    }
+
+    return (
+        <List >
+            { data.feed.map((item) => {
+                    const badge = item.repository.stargazers_count && {
+                        value: `☆ ${item.repository.stargazers_count}`,
+                        badgeContainerStyle: { right: 10, backgroundColor: '#56579B' },
+                        badgeTextStyle: { fontSize: 12 },
+                    };
+
+
+                    return <ListItem
+                        hideChevron
+                        title={`${item.repository.owner.login}/${item.repository.name}`}
+                        subtitle={`Posted by ${item.postedBy.login}`}
+                        badge={badge}
+                    />;
+                }
+            ) }
+        </List>
+    )
+}
 
 export default class MapScreen extends React.Component {
     static navigationOptions = {
@@ -169,18 +239,19 @@ export default class MapScreen extends React.Component {
                             coordinate={marker.coordinate}
                         />
                     ))}
-                    {this.state.markers.map(marker => (
+                    {this.state.markers.map((marker,index) => (
                     <MapView.Circle radius={200}
-                                    fillColor="rgba(0, 0, 0, 0.7)"
-                                    strokeColor="rgba(0, 0, 0, 0.2)"
+                                    key={'lmarker-key'+index.toString()}
+                                    fillColor="rgba(0, 0, 0, 0.2)"
+                                    strokeColor="rgba(0, 0, 0, 0.7)"
                                     center={marker.coordinate}
                     />
                     ))}
                     <MyLocationMapMarker />
 
                     <MapView.Circle radius={500}
-                                    fillColor="rgba(0, 0, 0, 0.7)"
-                                    strokeColor="rgba(0, 0, 0, 0.2)"
+                                    fillColor="rgba(0, 0, 0, 0.2)"
+                                    strokeColor="rgba(0, 0, 0, 0.7)"
                                     center={this.state.location.coords}
                         // center.longitude={latlng.longtiude}
                     />
@@ -199,6 +270,7 @@ export default class MapScreen extends React.Component {
         return (
             <View style={styles.container}>
                 {map}
+                <FeedWithData/>
 
                 <ScrollView
                     style={styles.container}
