@@ -33,24 +33,20 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
 // const LONGITUDE_DELTA = 0.03;
 
 
+
 let id = 0;
 
-// Apollo Client lets you attach GraphQL queries to
-// your UI components to easily load data
-const FeedWithData = graphql(gql`{
-  feed (type: TOP, limit: 4) {
-    repository {
-      name, owner { login }
-      
-      # Uncomment the line below to get number of stars!
-      stargazers_count
-    }
+const AdiLmarkersWithData = graphql(gql`
+  query{   testField
+      lmarkers {
+        id
+        lat
+        lng
+      }
+    }`, { options: { notifyOnNetworkStatusChange: true } })(AdiFeed)
 
-    postedBy { login }
-  }
-}`, { options: { notifyOnNetworkStatusChange: true } })(Feed);
 
-function Feed({ data }) {
+function AdiFeed({data}){
     return (
         <ScrollView style={styles.container} refreshControl={
             // This enables the pull-to-refresh functionality
@@ -62,13 +58,15 @@ function Feed({ data }) {
 
 
 
-            <Text>GitHunt</Text>
-            <FeedList data={data} />
+            <Text>Nearby markers</Text>
+            <AdiFeedList data={data} />
         </ScrollView>
     );
 }
 
-function FeedList({ data }) {
+
+
+function AdiFeedList({ data }) {
     if (data.networkStatus === 1) {
         return <ActivityIndicator style={styles.loading} />;
     }
@@ -77,20 +75,26 @@ function FeedList({ data }) {
         return <Text>Error! {data.error.message}</Text>;
     }
 
+    console.log(data)
+    // console.log(process.env.ADI_GRAPHQL_SERVER)
+    // console.log(config)
+
     return (
         <List >
-            { data.feed.map((item) => {
-                    const badge = item.repository.stargazers_count && {
-                        value: `☆ ${item.repository.stargazers_count}`,
-                        badgeContainerStyle: { right: 10, backgroundColor: '#56579B' },
-                        badgeTextStyle: { fontSize: 12 },
-                    };
+            { data.lmarkers.map((lmarker, index) => {
+
+
+                    const badge = { value: 'rock',
+                        textStyle: { color: 'orange' },
+                        containerStyle: { marginTop: -2 } }
 
 
                     return <ListItem
+                        key={"lmarker-key" + index.toString()}
                         hideChevron
-                        title={`${item.repository.owner.login}/${item.repository.name}`}
-                        subtitle={`Posted by ${item.postedBy.login}`}
+                        title={`${lmarker.id} -- lat/lng: ${lmarker.lat.toFixed(3)}, ${lmarker.lng.toFixed(3)}`}
+                        // subtitle={`ltype ${lmarker.ltype}, user: ${lmarker.user_id}`}
+                        subtitle="subtitle"
                         badge={badge}
                     />;
                 }
@@ -98,6 +102,8 @@ function FeedList({ data }) {
         </List>
     )
 }
+
+
 
 export default class MapScreen extends React.Component {
     static navigationOptions = {
@@ -111,17 +117,11 @@ export default class MapScreen extends React.Component {
         this.state = {
             location: null,
             errorMessage: null,
-            text : 'hello',
             position: {
                 latitude: 37.78825,
                 longitude: -122.4324,
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
-            },
-            region: {
-                latitude: 37.78825,
-                longitude: -122.4324,
-
             },
             markers: [],
         }
@@ -183,8 +183,6 @@ export default class MapScreen extends React.Component {
         );
     }
 
-    //lat lng
-    //45.50090281462489	-73.57846498489381
 
     onRegionChange = (region) => {
         this.setState({position: region});
@@ -270,7 +268,8 @@ export default class MapScreen extends React.Component {
         return (
             <View style={styles.container}>
                 {map}
-                <FeedWithData/>
+                {/*<FeedWithData/>*/}
+                <AdiLmarkersWithData/>
 
                 <ScrollView
                     style={styles.container}

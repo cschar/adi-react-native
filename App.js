@@ -5,6 +5,9 @@ import { AppLoading, Asset, Font } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import RootNavigation from './navigation/RootNavigation';
 
+import config from './config.js'
+
+
 export default class App extends React.Component {
   state = {
     assetsAreLoaded: false,
@@ -14,7 +17,7 @@ export default class App extends React.Component {
         // Initialize Apollo Client with URL to our server
         return new ApolloClient({
             networkInterface: createNetworkInterface({
-                uri: 'http://api.githunt.com/graphql',
+                uri: config.ADI_GRAPHQL_SERVER
             }),
         });
     }
