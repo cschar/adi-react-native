@@ -24,6 +24,8 @@ import { MonoText } from '../components/StyledText';
 
 import MyLocationMapMarker from './MyLocationMapMarker'
 
+
+
 //NO zoom in react-native-maps, lngitude-delta instead
 let { width, height } = Dimensions.get('window')
 const ASPECT_RATIO = width / height
@@ -31,9 +33,6 @@ const ASPECT_RATIO = width / height
 const LATITUDE_DELTA = 0.01;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
 // const LONGITUDE_DELTA = 0.03;
-
-
-
 let id = 0;
 
 const AdiLmarkersWithData = graphql(gql`
@@ -75,7 +74,7 @@ function AdiFeedList({ data }) {
         return <Text>Error! {data.error.message}</Text>;
     }
 
-    console.log(data)
+    // console.log(data)
     // console.log(process.env.ADI_GRAPHQL_SERVER)
     // console.log(config)
 
@@ -268,9 +267,7 @@ export default class MapScreen extends React.Component {
         return (
             <View style={styles.container}>
                 {map}
-                {/*<FeedWithData/>*/}
-                <AdiLmarkersWithData/>
-
+                
                 <ScrollView
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}>

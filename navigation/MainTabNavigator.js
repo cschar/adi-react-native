@@ -20,7 +20,7 @@ export default TabNavigator(
       screen: HomeScreen,
     },
     Links: {
-      screen: MyLocationMapMarker,
+      screen: LinksScreen,
     },
     Settings: {
       screen: SettingsScreen,
