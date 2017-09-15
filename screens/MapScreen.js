@@ -103,11 +103,7 @@ function AdiFeedList({ data }) {
 }
 
 
-
-export default class MapScreen extends React.Component {
-    static navigationOptions = {
-        header: null,
-    };
+class SimpleMap extends React.Component {
 
 
 
@@ -127,7 +123,6 @@ export default class MapScreen extends React.Component {
 
 
     }
-
 
     _getLocationAsync = async () => {
         let { status } = await Permissions.askAsync(Permissions.LOCATION);
@@ -152,35 +147,7 @@ export default class MapScreen extends React.Component {
     }
 
 
-    componentDidMount() {
 
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                //{"coords":{"speed":-1,"longitude":-73.57580703249558,"latitude":45.503924578328046,"accuracy":65,"heading":-1,"altitude":55.799049377441406,"altitudeAccuracy":17.44413166346171},"timestamp":1505429158873.3079}
-                var initialPosition = JSON.stringify(position);
-
-                this.setState(function (prevState){
-                    console.log(initialPosition)
-
-                    this.forceUpdate();
-                    return {...prevState,
-                        text: initialPosition,
-                        position: {'latitude': position.coords.latitude,
-                                   'longitude': position.coords.longitude,
-                            latitudeDelta: LATITUDE_DELTA,
-                            longitudeDelta: LONGITUDE_DELTA,
-
-                    }}
-                });
-
-
-                console.log("setting state")
-            },
-            (error) => {console.log('no'); console.log(error)},
-            {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
-        );
-    }
 
 
     onRegionChange = (region) => {
@@ -237,12 +204,12 @@ export default class MapScreen extends React.Component {
                         />
                     ))}
                     {this.state.markers.map((marker,index) => (
-                    <MapView.Circle radius={200}
-                                    key={'lmarker-key'+index.toString()}
-                                    fillColor="rgba(0, 0, 0, 0.2)"
-                                    strokeColor="rgba(0, 0, 0, 0.7)"
-                                    center={marker.coordinate}
-                    />
+                        <MapView.Circle radius={200}
+                                        key={'lmarker-key'+index.toString()}
+                                        fillColor="rgba(0, 0, 0, 0.2)"
+                                        strokeColor="rgba(0, 0, 0, 0.7)"
+                                        center={marker.coordinate}
+                        />
                     ))}
                     <MyLocationMapMarker />
 
@@ -257,16 +224,71 @@ export default class MapScreen extends React.Component {
             )
         }
 
-        // var latlng = MapView.La
-        let latlng = {latitude: this.state.position.latitude,
-                      longitude: this.state.position.longitude}
+        console.log("rendering simple map");
 
-        console.log("rendering");
-        console.log(this.state.position)
 
         return (
             <View style={styles.container}>
                 {map}
+            </View>
+        );
+    }
+}
+
+
+export default class MapScreen extends React.Component {
+    static navigationOptions = {
+        header: null,
+    };
+
+    constructor(){
+        super()
+        this.state = {
+            location: null,
+            errorMessage: null,
+        }
+    }
+
+    _getLocationAsync = async () => {
+        let { status } = await Permissions.askAsync(Permissions.LOCATION);
+        if (status !== 'granted') {
+            this.setState({
+                errorMessage: 'Permission to access location was denied',
+            });
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        this.setState({ location });
+        this.setState({position: {
+            longitude: location.coords.longitude,
+            latitude: location.coords.latitude,
+            latitudeDelta: 0.09,
+            longitudeDelta: 0.04}
+        })
+    };
+
+    componentWillMount() {
+        this._getLocationAsync();
+    }
+
+
+    render() {
+
+
+        let currentLocation = 'Waiting..';
+        if (this.state.errorMessage) {
+            currentLocation = this.state.errorMessage;
+        } else if (this.state.location) {
+            initRegion = true;
+            currentLocation = JSON.stringify(this.state.location);
+        }
+
+        console.log("rendering");
+
+
+        return (
+            <View style={styles.container}>
+                <SimpleMap/>
                 
                 <ScrollView
                     style={styles.container}
