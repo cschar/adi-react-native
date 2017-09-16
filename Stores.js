@@ -1,20 +1,50 @@
 
 // import axios from 'axios';
-import { observable } from 'mobx';
+import { observable, autorun } from 'mobx';
 import { Alert } from 'react-native';
 
 // const API_URL: string = 'https://api.spotify.com/v1/search';
+import { createStore } from 'redux'
+import reducer from './reducers.js'
 
-export default class SearchStore {
+
+// let store = null;
+//
+// global.storage.load({
+//     key: 'userInfo',
+// }).then(ret => {
+//     persistedState = ret;
+//     store = createStore(
+//         reducer,
+//         persistedState
+//     )
+// }).catch(err => {
+//     console.warn(err.message);
+// })
+
+const store = createStore(
+    reducer,
+)
+
+export default store
+
+
+
+// export default class SearchStore {
+class SearchStore {
     @observable query = 'zaquery';
-    @observable token = '';
+    @observable token = 'defaultToken';
     @observable tracks = [];
 
     get query() {
         return this.query;
     }
 
-    // set query(artist: string) {
+    set token(token) {
+        console.log("SET TOKEN================")
+        return this.token
+    }
+
     set query(artist) {
         this.query = artist;
     }
@@ -23,19 +53,35 @@ export default class SearchStore {
         return this.tracks;
     }
 
-    // set tracks(result: Array<Object>) {
-    //
-    // async getTrackList(query: string) {
-    //     if (!query) {
-    //         this.tracks = [];
-    //         return;
-    //     }
-    //     try {
-    //         const requestURL = `${API_URL}?q=${query}&type=track&limit=10`;
-    //         const response = await axios.get(requestURL);
-    //         this.tracks = response.data.tracks.items;
-    //     } catch (e) {
-    //         Alert.alert('Connection error', 'Couldn\'t fetch the data.');
-    //     }
-    // }
+
 }
+
+
+
+const SearchStore2 = observable({
+    /* some observable state */
+    token: 'farboo',
+    query: 'habba',
+    query2: 'habba',
+
+    /* a derived value */
+    get fancyToken() {
+        return this.token + '[]]';
+    }
+});
+
+/* a function that observes the state */
+autorun(function() {
+    console.log("Completed %s of %s items %s",
+        SearchStore.token,
+        SearchStore2.token,
+        SearchStore2.query,
+        SearchStore2.query2
+
+    );
+});
+
+SearchStore2.token = 'NEW-TOken'
+//export default searchStore2
+
+

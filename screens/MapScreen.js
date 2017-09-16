@@ -188,6 +188,12 @@ class SimpleMap extends React.Component {
 
     render() {
 
+        if(!this.props.token){
+            return (
+                <Text style={{marginTop:100}}> Login First </Text>
+            )
+        }
+
         let initRegion = false;
         let currentLocation = 'Waiting..';
         if (this.state.errorMessage) {
@@ -344,6 +350,17 @@ class SimpleMap extends React.Component {
 }
 
 
+//TODO: Just make login screen before tab navigation
+import { connect } from 'react-redux';
+const mapStateToProps = function(store) {
+    return {
+        token: store.redOne.token,
+    };
+}
+
+const SimpleMapContainer =  connect(mapStateToProps)(SimpleMap)
+
+
 export default class MapScreen extends React.Component {
     static navigationOptions = {
         header: null,
@@ -357,7 +374,7 @@ export default class MapScreen extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <SimpleMap
+                <SimpleMapContainer
 
                 />
             </View>

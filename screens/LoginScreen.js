@@ -5,6 +5,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    ActivityIndicator,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -18,23 +19,29 @@ import { MonoText } from '../components/StyledText';
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
 
+
 const LOGIN = 'login'
 const SIGNUP = 'singup'
 
 
-@observer
+let timerData2 = observable({
+    secondsPassed: 0
+});
+
+//@observer
 export class LoginScreen extends React.Component {
     static navigationOptions = {
         header: null,
     };
 
-    @observable query = 'zup';
-    @observable token = null;
+  //  @observable query = 'zup';
+    //@observable token = null;
 
 
     constructor(){
         super();
         this.state = {
+            loading: false,
             viewType: LOGIN,
             loginEmailText: 'test@z.ca',
             loginPasswordText: 'horahora',
@@ -44,60 +51,113 @@ export class LoginScreen extends React.Component {
     }
 
     onClick = (e) => {
+
         console.log('click')
-        // console.log(this.query)
-        // this.query = this.query + "HEY"
-        // console.log(this.query)
+        this.props.setToken(this.token);
 
-        console.log(this.token)
-        console.log(this.query)
+    }
 
+    logout = (e) => {
+        this.props.setToken(null)
     }
 
     submitSignup = (e) => {
         console.log('signing UP!  ')
+        this.setState({loading: true})
         this.props.signUpMutation({
             variables: { email: this.state.signupEmailText,
                         password: this.state.signupPasswordText}
         })
             .then(({ data }) => {
                 console.log('got data', data);
-                this.query = data;
+                this.setState({loading: false})
+                this.setState({loading: false})
+
+
                 if(data.createUser && data.createUser.token) {
-                    this.token = data.createUser.token
+
+                    this.props.setToken(data.createUser.token);
+                    global.storage.save({
+                        key: 'userInfo',   // Note: Do not use underscore("_") in key!
+                        data: {
+                            id: data.createUser.user.id,
+                            email: data.createUser.user.email,
+                            token: data.createUser.token
+                        }
+                    });
                 }
 
             }).catch((error) => {
+            this.setState({loading: false})
             console.log('there was an error sending the query', error);
         });
 
-        console.log('sing up')
     }
 
     submitLogin = (e) => {
         console.log('logging in  ')
+        this.setState({loading: true})
         this.props.loginMutation({
             variables: { email: this.state.loginEmailText,
                          password: this.state.loginPasswordText}
         })
             .then(({ data }) => {
                 console.log('got data', data);
-                this.query = data;
+                this.setState({loading: false})
 
                 if(data.signInUser && data.signInUser.token) {
-                    this.token = data.signInUser.token
+
+                    this.props.setToken(data.signInUser.token);
+                    global.storage.save({
+                        key: 'userInfo',   // Note: Do not use underscore("_") in key!
+                        data: {
+                            id: data.signInUser.user.id,
+                            email: data.signInUser.user.email,
+                            token: data.signInUser.token
+                        }
+                    });
                 }
             }).catch((error) => {
+            this.setState({loading: false})
             console.log('there was an error sending the query', error);
         });
     }
 
     render() {
-
+        if (this.state.loading){
+            return (
+                <View style={{backgroundColor: '#c6dddc', paddingTop:40, margin:20}}>
+                    <View style={styles.centering}>
+                        <Text style={{fontSize: 24}}> Loading... </Text>
+                        <ActivityIndicator color="green"
+                                           size="large"
+                        />
+                    </View>
+                </View>
+            )
+        }
         let view = null;
-        if( this.state.viewType === LOGIN){
+        if( this.props.token){
             view = (
-                <View style={{backgroundColor: '#c6dddc', paddingTop:40 }}>
+                <View>
+                    <Button backgroundColor={'#62cd91'}
+                            onPress={this.onClick}
+                            fontSize={24}
+                            icon={{name: 'settings-input-component', size:40}}
+                            title={'Signed In!'} />
+                    <Text> {this.props.token} </Text>
+
+                    <Button backgroundColor={'#cd9258'}
+                            onPress={this.logout}
+                            fontSize={24}
+                            icon={{name: 'settings-input-component', size:40}}
+                            title={'Log out'} />
+                </View>
+            )
+        }else if
+        (this.state.viewType === LOGIN){
+            view = (
+                <View style={{flexGrow: 1}}>
                     <Button backgroundColor={'#62cd91'}
                             onPress={this.onClick}
                             fontSize={24}
@@ -129,7 +189,7 @@ export class LoginScreen extends React.Component {
             )
         }else{
             view = (
-                <View style={{backgroundColor: '#c6dddc', paddingTop:40}}>
+                <View>
                     <Button backgroundColor={'#62cd91'}
                             fontSize={24}
                             icon={{name: 'settings-input-component', size:40}}
@@ -160,19 +220,27 @@ export class LoginScreen extends React.Component {
             )
         }
 
-        let loginSignupText = "Or... " + this.state.viewType === LOGIN ? SIGNUP : LOGIN;
-        console.log(loginSignupText)
 
         return (
             <View style={styles.container}>
                 <ScrollView
                     style={styles.container}
+                    contentContainerStyle={{
+                        flexDirection:'column',
+                        alignItems: 'stretch',
+                        flexBasis: 'auto'}}
                     >
 
-                    <View style={{margin: 20}}>
+                    <View style={{flexDirection:'column',
+                        alignItems: 'stretch',
+                        flexBasis: 'auto',
+                        backgroundColor: '#c6dddc', paddingTop:40, margin:20}}>
+
                         {view}
 
                     </View>
+                    <Text> {this.props.token} </Text>
+
 
                 </ScrollView>
             </View>
@@ -183,13 +251,6 @@ export class LoginScreen extends React.Component {
 
 
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-
-});
 
 
 const submitLogin = gql`
@@ -224,4 +285,40 @@ const LoginScreenWithMutations = compose(
     graphql(submitLogin, { name: 'loginMutation' })
 )(LoginScreen);
 
-export default LoginScreenWithMutations;
+// export default LoginScreenWithMutations;
+
+import { connect } from 'react-redux';
+const mapStateToProps = function(store) {
+
+    return {
+        token: store.redOne.token,
+    };
+}
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setToken : (token) => (
+            dispatch({
+                type:'SET_TOKEN',
+                token: token
+            })
+        ),
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginScreenWithMutations)
+
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    centering: {
+        marginTop:50,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 8,
+    },
+
+});
+

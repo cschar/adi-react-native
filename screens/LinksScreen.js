@@ -7,7 +7,7 @@ import AdiLmarkersFeed from '../components/AdiLmarkersFeed'
 
 
 const AdiLmarkersWithData = graphql(gql`
-  query{   testField
+  query{
       lmarkers {
         id
         lat

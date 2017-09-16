@@ -5,10 +5,51 @@ import { AppLoading, Asset, Font } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import RootNavigation from './navigation/RootNavigation';
 
-import config from './config.js'
+// import config from './config.js'
 
-import { Provider } from 'mobx-react';
-import SearchStore from './Stores.js';
+// import { Provider } from 'mobx-react';
+
+import { Provider } from 'react-redux'
+import store from './Stores.js';
+
+
+import { observable } from 'mobx';
+import { observer, inject } from 'mobx-react';
+
+import Storage from 'react-native-storage';
+import { AsyncStorage } from 'react-native';
+
+const storage = new Storage({
+    // maximum capacity, default 1000
+    size: 1000,
+
+    // Use AsyncStorage for RN, or window.localStorage for web.
+    // If not set, data would be lost after reload.
+    storageBackend: AsyncStorage,
+
+    // expire time, default 1 day(1000 * 3600 * 24 milliseconds).
+    // can be null, which means never expire.
+    defaultExpires: 1000 * 3600 * 24,
+
+    // cache data in the memory. default is true.
+    enableCache: true,
+
+    // if data was not found in storage or expired,
+    // the corresponding sync method will be invoked and return
+    // the latest data.
+    sync : {
+        // we'll talk about the details later.
+    }
+})
+global.storage = storage;
+storage.save({
+    key: 'userInfo',   // Note: Do not use underscore("_") in key!
+    data: {
+        id: 'none',
+        email: 'noemail',
+        token: 'notoken'
+    }
+});
 
 
 
@@ -16,15 +57,6 @@ export default class App extends React.Component {
   state = {
     assetsAreLoaded: false,
   };
-
-    createClient() {
-        // Initialize Apollo Client with URL to our server
-        return new ApolloClient({
-            networkInterface: createNetworkInterface({
-                uri: config.ADI_GRAPHQL_SERVER
-            }),
-        });
-    }
 
   componentWillMount() {
     this._loadAssetsAsync();
@@ -35,8 +67,8 @@ export default class App extends React.Component {
       return <AppLoading />;
     } else {
       return (
-          <Provider store={SearchStore}>
-          <ApolloProvider client={this.createClient()}>
+          <Provider store={store}>
+
         <View style={styles.container}>
             {Platform.OS === 'ios'}
           {/*{Platform.OS === 'ios' && <StatusBar barStyle="default" />}*/}
@@ -44,7 +76,6 @@ export default class App extends React.Component {
             <View style={styles.statusBarUnderlay} />}
           <RootNavigation />
         </View>
-          </ApolloProvider>
           </Provider>
       );
     }
