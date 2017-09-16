@@ -14,7 +14,7 @@ import {
 
 import { List, ListItem, Button } from 'react-native-elements';
 
-import { gql, ApolloClient, createNetworkInterface, ApolloProvider, graphql } from 'react-apollo';
+import { gql, graphql } from 'react-apollo';
 import { WebBrowser } from 'expo';
 import { MapView } from 'expo';
 import { Constants, Location, Permissions } from 'expo';
@@ -37,7 +37,7 @@ let id = 0;
 
 
 const SimpleMapWithData = graphql(gql`
-  query{   testField
+  query{
       lmarkers {
         id
         lat
@@ -55,7 +55,7 @@ function SimpleMapMarkers({data, defaultPos}){
     console.log("render simpleMap Marker");
     console.log(data);
 
-    if (data == null || data.loading ) {
+    if (data == null || data.loading || data.error) {
         return (
             <MapView.Circle radius={600}
                             key={'DEFAULTATUL'}
@@ -289,27 +289,43 @@ class SimpleMap extends React.Component {
         }
         return (
             <View style={styles.container}>
+                <View style={{ height: '70%', borderWidth: 1 }}>
                 {map}
+                </View>
                 <ScrollView
-                    style={styles.container}
+                    style={{backgroundColor: '#d2caac', borderWidth: 1 }}
                     contentContainerStyle={styles.contentContainer}>
 
-                    <View style={styles.helpContainer}>
+                    <View style={{backgroundColor: '#a3a3d3',
+                                  alignItems: 'flex-start'}}>
+                        {action1Button}
+
+                        {/*<TouchableOpacity*/}
+                            {/*onPress={this.action2Press}*/}
+                            {/*style={styles.action1Link}>*/}
+                            {/*<Text style={styles.helpLinkText}>*/}
+                                {/*get location*/}
+                            {/*</Text>*/}
+                        {/*</TouchableOpacity>*/}
 
 
                     </View>
-                    <View style={styles.helpContainer}>
-                        {action1Button}
 
-                        <TouchableOpacity
-                            onPress={this.action2Press}
-                            style={styles.action1Link}>
-                            <Text style={styles.helpLinkText}>
-                                get location
-                            </Text>
-                        </TouchableOpacity>
+                    <View style={{flexDirection:'row',
+                                  alignItems: 'stretch',
+                                  flexBasis: 'auto'}}>
+                        <View style={{flexGrow: 1, backgroundColor: '#fff'}}>
 
-                        <Text>{this.state.dumps}</Text>
+                            <Text style={{flexGrow: 1}}> col 1</Text>
+                            <Text>{this.state.dumps}</Text>
+
+                        </View>
+                        <View style={{flexGrow: 1, backgroundColor: '#aaa'}}>
+                            <Text style={{height:40}}> col 2</Text>
+                            <Text style={{height:40}}> col 2</Text>
+
+                        </View>
+
                     </View>
                 </ScrollView>
                 {/*{this.props.data.lmarkers.length}*/}
@@ -335,72 +351,17 @@ export default class MapScreen extends React.Component {
 
     constructor(){
         super()
-        this.state = {
-            location: null,
-            errorMessage: null,
-        }
-    }
-
-    _getLocationAsync = async () => {
-        let { status } = await Permissions.askAsync(Permissions.LOCATION);
-        if (status !== 'granted') {
-            this.setState({
-                errorMessage: 'Permission to access location was denied',
-            });
-        }
-
-        let location = await Location.getCurrentPositionAsync({});
-        this.setState({ location });
-        this.setState({position: {
-            longitude: location.coords.longitude,
-            latitude: location.coords.latitude,
-            latitudeDelta: 0.09,
-            longitudeDelta: 0.04}
-        })
-    };
-
-    componentWillMount() {
-        this._getLocationAsync();
     }
 
 
     render() {
-
-
-        let currentLocation = 'Waiting..';
-        if (this.state.errorMessage) {
-            currentLocation = this.state.errorMessage;
-        } else if (this.state.location) {
-            initRegion = true;
-            currentLocation = JSON.stringify(this.state.location);
-        }
-
-        console.log("rendering");
-
-
         return (
             <View style={styles.container}>
                 <SimpleMap
 
                 />
-
-                {/*<ScrollView*/}
-                    {/*style={styles.container}*/}
-                    {/*contentContainerStyle={styles.contentContainer}>*/}
-
-                    {/*<Text>*/}
-                    {/*currentLocation: {currentLocation}*/}
-                    {/*</Text>*/}
-
-                {/*</ScrollView>*/}
-
             </View>
         );
-    }
-
-    action1Press = () => {
-        console.log('action 1')
-        // this.setState({placeMarkerEnabled: true})
     }
 
 }
@@ -418,7 +379,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     contentContainer: {
-        paddingTop: 30,
+        paddingTop: 10,
     },
     welcomeContainer: {
         alignItems: 'center',

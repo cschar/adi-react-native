@@ -10,15 +10,17 @@ import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import MapScreen from '../screens/MapScreen'
 import MyLocationMapMarker from '../screens/MyLocationMapMarker'
+import LoginScreenWithMutations from "../screens/LoginScreen";
 
 export default TabNavigator(
   {
+      Home: {
+          screen: LoginScreenWithMutations,
+      },
       MAP: {
           screen: MapScreen,
       },
-    Home: {
-      screen: HomeScreen,
-    },
+
     Links: {
       screen: LinksScreen,
     },
