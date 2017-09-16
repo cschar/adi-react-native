@@ -15,37 +15,58 @@ import { gql, graphql, compose } from 'react-apollo';
 
 import { MonoText } from '../components/StyledText';
 
+import { observable } from 'mobx';
+import { observer, inject } from 'mobx-react';
 
 const LOGIN = 'login'
 const SIGNUP = 'singup'
 
+
+@observer
 export class LoginScreen extends React.Component {
     static navigationOptions = {
         header: null,
     };
 
+    @observable query = 'zup';
+    @observable token = null;
+
+
     constructor(){
         super();
         this.state = {
             viewType: LOGIN,
-            loginEmailText: '',
-            loginPasswordText: '',
-            signupEmailText: '',
-            signupPasswordText: ''
+            loginEmailText: 'test@z.ca',
+            loginPasswordText: 'horahora',
+            signupEmailText: 'test@z.ca',
+            signupPasswordText: 'horahora'
         }
     }
 
-    onClick() {
+    onClick = (e) => {
+        console.log('click')
+        // console.log(this.query)
+        // this.query = this.query + "HEY"
+        // console.log(this.query)
+
+        console.log(this.token)
+        console.log(this.query)
 
     }
 
     submitSignup = (e) => {
+        console.log('signing UP!  ')
         this.props.signUpMutation({
-            variables: { email: this.state.loginEmailText,
-                        password: this.state.loginPasswordText}
+            variables: { email: this.state.signupEmailText,
+                        password: this.state.signupPasswordText}
         })
             .then(({ data }) => {
                 console.log('got data', data);
+                this.query = data;
+                if(data.createUser && data.createUser.token) {
+                    this.token = data.createUser.token
+                }
+
             }).catch((error) => {
             console.log('there was an error sending the query', error);
         });
@@ -54,13 +75,18 @@ export class LoginScreen extends React.Component {
     }
 
     submitLogin = (e) => {
-        console.log('logging in ')
-        this.props.loginMutationmutate({
-            variables: { email: this.state.signupEmailText,
-                         password: this.state.signupPasswordText}
+        console.log('logging in  ')
+        this.props.loginMutation({
+            variables: { email: this.state.loginEmailText,
+                         password: this.state.loginPasswordText}
         })
             .then(({ data }) => {
                 console.log('got data', data);
+                this.query = data;
+
+                if(data.signInUser && data.signInUser.token) {
+                    this.token = data.signInUser.token
+                }
             }).catch((error) => {
             console.log('there was an error sending the query', error);
         });
@@ -73,6 +99,7 @@ export class LoginScreen extends React.Component {
             view = (
                 <View style={{backgroundColor: '#c6dddc', paddingTop:40 }}>
                     <Button backgroundColor={'#62cd91'}
+                            onPress={this.onClick}
                             fontSize={24}
                             icon={{name: 'settings-input-component', size:40}}
                             title={'Login to your Account'} />
@@ -102,7 +129,7 @@ export class LoginScreen extends React.Component {
             )
         }else{
             view = (
-                <View style={{backgroundColor: '#c6dddc'}}>
+                <View style={{backgroundColor: '#c6dddc', paddingTop:40}}>
                     <Button backgroundColor={'#62cd91'}
                             fontSize={24}
                             icon={{name: 'settings-input-component', size:40}}
@@ -166,7 +193,7 @@ const styles = StyleSheet.create({
 
 
 const submitLogin = gql`
-mutation{
+mutation($email: String!, $password: String!){
  signInUser(input: {email: $email, password:$password}){
     token
     user{
@@ -177,8 +204,11 @@ mutation{
 }
 `;
 
+//mutation($email: String!, $password: String!)
+// has to match schema returned by server
+
 const submitSignup = gql`
-mutation{ 
+mutation($email: String!, $password: String!){ 
  createUser(input: {email: $email, password:$password}){
     token
     user{

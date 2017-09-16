@@ -53,7 +53,7 @@ function SimpleMapMarkers({data, defaultPos}){
     // }
 
     console.log("render simpleMap Marker");
-    console.log(data);
+    // console.log(data);
 
     if (data == null || data.loading || data.error) {
         return (
@@ -267,7 +267,7 @@ class SimpleMap extends React.Component {
         console.log("rendering simple map");
 
         if(this.props.data){
-            console.log(this.props.data)
+            // console.log(this.props.data)
         }
 
         let action1Button = (<TouchableOpacity

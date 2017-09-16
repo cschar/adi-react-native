@@ -7,6 +7,10 @@ import RootNavigation from './navigation/RootNavigation';
 
 import config from './config.js'
 
+import { Provider } from 'mobx-react';
+import SearchStore from './Stores.js';
+
+
 
 export default class App extends React.Component {
   state = {
@@ -31,6 +35,7 @@ export default class App extends React.Component {
       return <AppLoading />;
     } else {
       return (
+          <Provider store={SearchStore}>
           <ApolloProvider client={this.createClient()}>
         <View style={styles.container}>
             {Platform.OS === 'ios'}
@@ -40,6 +45,7 @@ export default class App extends React.Component {
           <RootNavigation />
         </View>
           </ApolloProvider>
+          </Provider>
       );
     }
   }
