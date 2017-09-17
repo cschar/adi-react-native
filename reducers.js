@@ -2,7 +2,10 @@ import { combineReducers } from 'redux'
 
 const initialState = {
     token: null,
-    foop: 'za'
+    foop: 'za',
+    userId: null,
+    points: null,
+    userInfo: {}
 };
 
 const redOne = (state = initialState, action) => {
@@ -14,6 +17,12 @@ const redOne = (state = initialState, action) => {
             return {
                 ...state,
                 token: action.token
+            }
+        case 'SET_USER_INFO':
+            return {
+                ...state,
+                token: action.token,
+                userInfo: action.userInfo
             }
 
         default:

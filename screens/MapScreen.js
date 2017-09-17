@@ -14,7 +14,7 @@ import {
 
 import { List, ListItem, Button } from 'react-native-elements';
 
-import { gql, graphql } from 'react-apollo';
+import { gql, graphql , compose} from 'react-apollo';
 import { WebBrowser } from 'expo';
 import { MapView } from 'expo';
 import { Constants, Location, Permissions } from 'expo';
@@ -42,6 +42,8 @@ const SimpleMapWithData = graphql(gql`
         id
         lat
         lng
+        ltype
+        user_id
       }
     }`, { options: { notifyOnNetworkStatusChange: true } })(SimpleMapMarkers)
 
@@ -87,7 +89,7 @@ function SimpleMapMarkers({data, defaultPos}){
                             coordinate={latlng}
                             description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation" // eslint-disable-line max-len
                         >
-                            <MapView.Callout style={styles.plainView}>
+                            <MapView.Callout>
 
                                 <View style={{ backgroundColor: '#d1d1d1'}}>
                                     <View>
@@ -118,6 +120,122 @@ function SimpleMapMarkers({data, defaultPos}){
 }
 
 
+class MyMarker extends React.Component {
+    //latlng
+    //markerId
+
+    constructor(){
+        super()
+        this.state = {
+            ltype: 'rock'
+        }
+    }
+
+    placeLMarkerButton = () => {
+        this.props.placeLmarkerMutation({
+            variables: {
+                lat: this.props.latlng.latitude,
+                lng: this.props.latlng.longitude,
+                ltype: this.state.ltype
+            }
+        })
+            .then(({data}) => {
+                console.log('got data', data);
+
+            }).catch((error) => {
+                console.log('there was an error sending the query', error);
+        });
+    }
+
+    render(){
+
+        //cant set dynamic image paths?
+        //https://github.com/facebook/react-native/issues/2481
+        //this is slow i think because it has to load image each time...
+        let ltypeImg = null
+        if(this.state.ltype == 'rock'){
+            ltypeImg = (<Image style={{width: 50, height: 50}} source={require('../assets/images/rock2.png')} />)
+        }
+        if(this.state.ltype == 'paper'){
+            ltypeImg = (<Image style={{width: 50, height: 50}} source={require('../assets/images/paper2.png')} />)
+        }
+        if(this.state.ltype == 'scissors'){
+            ltypeImg = (<Image style={{width: 50, height: 50}} source={require('../assets/images/scissors2.png')} />)
+        }
+
+        return (
+            <View>
+                <MapView.Marker
+                    title={this.props.markerId}
+                    image={flagPinkImg}
+                    key={this.props.markerId }
+                    coordinate={this.props.latlng}
+                    description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation" // eslint-disable-line max-len
+                >
+                    <MapView.Callout>
+
+                        <View style={{ backgroundColor: '#d1d1d1'}}>
+                            <Text>Current Lmarker at {this.props.latlng.toString()} </Text>
+                            <Text>Ltype {this.state.ltype} </Text>
+
+                            <Image
+                                style={{width: 50, height: 50}}
+                                source={require('../assets/images/rock2.png')}
+                            />
+                            {ltypeImg}
+
+
+
+
+                            <Button backgroundColor={'#bbb'}
+                                    fontSize={14}
+                                    title={'set rock'}
+                                    onPress={()=>(this.setState({ltype: 'rock'}))}/>
+                            <Button backgroundColor={'#bbb'}
+                                    fontSize={14}
+                                    title={'set paper'}
+                                    onPress={()=>(this.setState({ltype: 'paper'}))}/>
+                            <Button backgroundColor={'#bbb'}
+                                    fontSize={14}
+                                    title={'set scissors'}
+                                    onPress={()=>(this.setState({ltype: 'scissors'}))}/>
+
+                            <Button backgroundColor={'#bbb'}
+                                    fontSize={18}
+                                    icon={{name: 'settings-input-component', size:20}}
+                                    title={'place lmarker'}
+                                    onPress={this.placeLMarkerButton}/>
+                        </View>
+                    </MapView.Callout>
+
+
+
+                </MapView.Marker>
+
+                <MapView.Circle radius={400}
+                                fillColor="rgba(133, 133, 200, 0.2)"
+                                strokeColor="rgba(0, 0, 0, 0.7)"
+                                center={this.props.latlng}
+                />
+            </View>
+        )
+    }
+}
+
+const placeLmarker = gql`
+mutation($lat: Float!, $lng: Float!, $ltype: String!){ 
+ placeLmarker(input: {lat: $lat, lng: $lng, ltype: $ltype}){
+    id
+    user_id
+    ltype
+    lat
+    lng
+  }
+}
+`;
+const MyMarkerWithMutations = compose(
+    graphql(placeLmarker, { name: 'placeLmarkerMutation' }),
+)(MyMarker);
 
 
 class SimpleMap extends React.Component {
@@ -237,12 +355,18 @@ class SimpleMap extends React.Component {
                     {this.state.markers.map( (marker, index) =>
                         (
                             <View key={'onmapPress-'+index}>
-                                <MapView.Marker
-                                    title={marker.key}
-                                    image={flagPinkImg}
-                                    key={marker.key + index.toString()}
-                                    coordinate={marker.coordinate}
-                                />
+                                {/*<MapView.Marker*/}
+                                    {/*title={marker.key}*/}
+                                    {/*image={flagPinkImg}*/}
+                                    {/*key={marker.key + index.toString()}*/}
+                                    {/*coordinate={marker.coordinate}*/}
+                                {/*/>*/}
+
+                                {/*<MyMarker*/}
+                                <MyMarkerWithMutations
+                                    markerId={marker.key}
+                                    latlng={marker.coordinate}
+                                    />
 
                                 <MapView.Circle radius={400}
                                                 key={'onpressmarker-key'+index.toString()}
@@ -302,7 +426,7 @@ class SimpleMap extends React.Component {
                     style={{backgroundColor: '#d2caac', borderWidth: 1 }}
                     contentContainerStyle={styles.contentContainer}>
 
-                    <View style={{backgroundColor: '#a3a3d3',
+                    <View style={{backgroundColor: '#fff8f9',
                                   alignItems: 'flex-start'}}>
                         {action1Button}
 
@@ -350,15 +474,24 @@ class SimpleMap extends React.Component {
 }
 
 
+const SimpleMapWithMutations = compose(
+    graphql(placeLmarker, { name: 'placeLmarkerMutation' }),
+)(SimpleMap);
+    //TODO this isnt needed, uses this inside smaller marker component
+
+
 //TODO: Just make login screen before tab navigation
 import { connect } from 'react-redux';
 const mapStateToProps = function(store) {
     return {
-        token: store.redOne.token,
+        token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3fQ.ABvxQMZYhgMBZ9nvxMXNoC3Z5DREeqIpwwyQ9HBYvbk",
+        // token: store.redOne.token,
+        //userInfo: store.redOne.userInfo
+        userInfo: {id: 7, email: 'test@z.ca', points: 12}
     };
 }
 
-const SimpleMapContainer =  connect(mapStateToProps)(SimpleMap)
+const SimpleMapContainer =  connect(mapStateToProps)(SimpleMapWithMutations)
 
 
 export default class MapScreen extends React.Component {
@@ -431,31 +564,7 @@ const styles = StyleSheet.create({
         lineHeight: 24,
         textAlign: 'center',
     },
-    tabBarInfoContainer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        ...Platform.select({
-            ios: {
-                shadowColor: 'black',
-                shadowOffset: { height: -3 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-            },
-            android: {
-                elevation: 20,
-            },
-        }),
-        alignItems: 'center',
-        backgroundColor: '#fbfbfb',
-        paddingVertical: 20,
-    },
-    tabBarInfoText: {
-        fontSize: 17,
-        color: 'rgba(96,100,109, 1)',
-        textAlign: 'center',
-    },
+
     navigationFilename: {
         marginTop: 5,
     },

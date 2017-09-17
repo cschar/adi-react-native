@@ -5,7 +5,6 @@ import { AppLoading, Asset, Font } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import RootNavigation from './navigation/RootNavigation';
 
-// import config from './config.js'
 
 // import { Provider } from 'mobx-react';
 

@@ -12,6 +12,7 @@ import config from '../config.js'
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
 
+import store from '../Stores.js';
 
 
 
@@ -33,8 +34,7 @@ const RootStackNavigator = StackNavigator(
 
 
 
-@observer
-export default class RootNavigator extends React.Component {
+class RootNavigator extends React.Component {
   componentDidMount() {
     this._notificationSubscription = this._registerForPushNotifications();
   }
@@ -43,23 +43,27 @@ export default class RootNavigator extends React.Component {
     this._notificationSubscription && this._notificationSubscription.remove();
   }
 
+  constructor(){
+      super()
+      this.createClient = this.createClient.bind(this);
+  }
 
-  @observable token = 'fooop';
-  @observable query = 'fooop213';
 
 
+  getToken = () => (this.props.token)
 
   createClient() {
       // Initialize Apollo Client with URL to our server
       let networkInterface =  createNetworkInterface({
               uri: config.ADI_GRAPHQL_SERVER,
-              opts: {
-                  headers: {
-                      'Authorization': `bearer ${this.token}`,
-                  }
-              }
+              //opts: {
+                  // headers: {
+                  //     'Authorization': `bearer ${this.props.token}`,
+                  // }
+              //}
           })
 
+      // let reactClass = this;
 
       let applyMiddleware = function(req, next) {
           if (!req.options.headers) {
@@ -67,26 +71,19 @@ export default class RootNavigator extends React.Component {
           }
 
           console.log("==middleware==")
-          console.log('was sending graphql query', req.options.headers['authorization'])
-          console.log('loading global storage')
-          global.storage.load({
-              key: 'userInfo',
-          }).then(ret => {
-              console.log(ret);
-          }).catch(err => {
-              console.warn(err.message);
-          })
-          // console.log("token set is", this.token)
-          // if (this.token){
-          //     req.options.headers['authorization'] = this.token;
-          // }
-          // console.log('now sending graphql query', req.options.headers['authorization'])
-          // console.log("query in store is", this.query)
+          console.log('[Authorization Header]: ', req.options.headers['authorization'])
+
+          // console.log(reactClass)
+          console.log(this);
+          console.log(store.getState());
+          console.log('getToken returns')
+          console.log()
+          console.log(() =>(store.getState()));
+          // console.log(this.props.token);
           console.log('nexting')
           next();
       }
 
-      applyMiddleware.bind(this)
 
       let debugMiddleware = {
           applyMiddleware
@@ -140,3 +137,16 @@ export default class RootNavigator extends React.Component {
     );
   };
 }
+
+
+import { connect } from 'react-redux';
+const mapStateToProps = function(store) {
+
+    return {
+        token: store.redOne.token,
+        // userInfo: store.redOne.userInfo
+    };
+}
+
+
+export default connect(mapStateToProps)(RootNavigator)
