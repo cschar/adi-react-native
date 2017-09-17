@@ -63,7 +63,7 @@ class RootNavigator extends React.Component {
               //}
           })
 
-      // let reactClass = this;
+      let reactClass = this;
 
       let applyMiddleware = function(req, next) {
           if (!req.options.headers) {
@@ -71,16 +71,13 @@ class RootNavigator extends React.Component {
           }
 
           console.log("==middleware==")
-          console.log('[Authorization Header]: ', req.options.headers['authorization'])
 
-          // console.log(reactClass)
-          console.log(this);
-          console.log(store.getState());
-          console.log('getToken returns')
-          console.log()
-          console.log(() =>(store.getState()));
-          // console.log(this.props.token);
-          console.log('nexting')
+          console.log(reactClass.getToken())
+          if (reactClass.getToken() != null && reactClass.getToken() != '') {
+              req.options.headers['authorization'] = 'bearer ' + reactClass.getToken()
+              console.log('[Authorization Header]: ', req.options.headers['authorization'])
+          }
+
           next();
       }
 

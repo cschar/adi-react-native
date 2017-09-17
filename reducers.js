@@ -1,12 +1,15 @@
 import { combineReducers } from 'redux'
 
 const initialState = {
-    token: null,
+    token: '',
     foop: 'za',
     userId: null,
     points: null,
-    userInfo: {}
+    userInfo: {},
+    localMarkers: []
 };
+
+let localMarkerID = 0;
 
 const redOne = (state = initialState, action) => {
     switch (action.type) {
@@ -23,6 +26,53 @@ const redOne = (state = initialState, action) => {
                 ...state,
                 token: action.token,
                 userInfo: action.userInfo
+            }
+
+        case 'ADD_MARKER':
+            localMarkerID++;
+            let marker = {
+                    coordinate: action.coordinate,
+                    key: localMarkerID,
+                }
+                console.log("markers before")
+            console.log(state.localMarkers.length)
+
+            return {
+                ...state,
+                localMarkers: [...state.localMarkers, marker]
+
+            }
+        case 'DELETE_MARKER':
+            console.log('deleting markers', action.markerId)
+
+            deleteLocalMarker = (id) => {
+                let newMarkers = state.localMarkers;
+                let markerToDeleteIndex = null;
+                for(let i=0; i < newMarkers.length; i++){
+                    let m = newMarkers[i]
+                    if( m.key == id){
+                        markerToDeleteIndex = i;
+                        break;
+                    }
+                }
+                if (markerToDeleteIndex == null){
+                    console.log("tried to delete marker but it didnt exist")
+                    return {...state}
+                }
+
+                newMarkers.splice(markerToDeleteIndex, 1)
+
+                console.log('deleting, new length', newMarkers.length)
+
+                return newMarkers
+            }
+
+            let newMarkers = deleteLocalMarker(action.markerId)
+
+            return {
+                ...state,
+                localMarkers: newMarkers
+
             }
 
         default:

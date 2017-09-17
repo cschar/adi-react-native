@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     },
     marker: {
         justifyContent: 'center',
-        backgroundColor: colorOfmyLocationMapMarker,
+        backgroundColor: 'rgba(167,199,255,0.4)',
         width: SIZE,
         height: SIZE,
         borderRadius: Math.ceil(SIZE / 2),
