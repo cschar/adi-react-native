@@ -13,7 +13,6 @@ import { FormLabel, FormInput, FormValidationMessage, Button } from 'react-nativ
 
 import { gql, graphql, compose } from 'react-apollo';
 
-import { Col, Row, Grid } from "react-native-easy-grid";
 import flagPinkImg from '../assets/icons/notification-icon.png';
 import papergif from '../assets/images/paper2.gif';
 

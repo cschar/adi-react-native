@@ -112,13 +112,15 @@ class MyMarker extends React.Component {
                             {/*</Row>*/}
 
                             {/*<Row style={{height: 50}}>*/}
-                            <SimpleButton text="rock" buttonStyle={{marginTop:30, paddingBottom:30, backgroundColor: '#bbb'}}
+                            <View style={{flexDirection:'row'}}>
+                            <SimpleButton text="rock" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
                                           onPress={()=>(this.setState({ltype: 'rock'}))}/>
-                            <SimpleButton text="paper" buttonStyle={{marginTop:30, paddingBottom:30, backgroundColor: '#bbb'}}
+                            <SimpleButton text="paper" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
                                           onPress={()=>(this.setState({ltype: 'paper'}))}/>
-                            <SimpleButton text="sci" buttonStyle={{marginTop:30, paddingBottom:30, backgroundColor: '#bbb'}}
+                            <SimpleButton text="sci" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
                                           onPress={()=>(this.setState({ltype: 'scissors'}))}/>
                             {/*</Row>*/}
+                            </View>
 
                             {/*<Row style={{height: 50}}>*/}
                             <Button backgroundColor={'#bbb'}

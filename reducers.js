@@ -31,9 +31,14 @@ const redOne = (state = initialState, action) => {
         case 'ADD_MARKER':
             localMarkerID++;
             let marker = {
-                    coordinate: action.coordinate,
-                    key: localMarkerID,
+                    user_id: state.userInfo.id,
+                    ltype: 'rock',
+                    lat: action.coordinate.latitude,
+                    lng: action.coordinate.longitude,
+                    id: '-1',
                 }
+                console.log("adding marker")
+                console.log(marker)
                 console.log("markers before")
             console.log(state.localMarkers.length)
 

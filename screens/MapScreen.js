@@ -41,9 +41,21 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
 // const LONGITUDE_DELTA = 0.03;
 let id = 0;
 
+function SimpleButton({text, buttonStyle, onPress}) {
+
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            style={buttonStyle}>
+            <Text>
+                {text}
+            </Text>
+        </TouchableOpacity>
+    )
+}
 
 
-function SimpleMapMarkers({data, userId, defaultPos}){
+function SimpleMapMarkers({data, userId, localMarkers, defaultPos}){
     // if (data.networkStatus === 1) {
     //     return (<View></View>)
     //     // return <ActivityIndicator style={styles.loading} />;
@@ -62,11 +74,19 @@ function SimpleMapMarkers({data, userId, defaultPos}){
             )
     }
 
+    let newMarker = {
+        id: '-1',
+        user_id: userId,
+        lat: -12,
+        lng: 12,
+        ltype: 'rock'
+    }
+
+    let allMarkers = data.lmarkers.concat(localMarkers);
 
     return (
         <View>
-        {data.lmarkers.map( function(marker, index) {
-
+        {allMarkers.map( function(marker, index) {
             let markerImg = null
             if(marker.ltype == 'rock'){
                 markerImg = rockImg
@@ -88,10 +108,56 @@ function SimpleMapMarkers({data, userId, defaultPos}){
 
             if (marker.user_id == userId){
                 return (
-                    <MyMarker key={'mymarker-'+index}
-                              ltype={marker.ltype}
-                              latlng={latlng}
-                              markerId={marker.id} />
+                    <View key={'myMarker-key'+index}>
+                        <MapView.Marker
+                            image={markerImg}
+                            key={marker.id + index.toString()}
+                            coordinate={latlng}
+                        >
+
+                            <MapView.Callout >
+
+                                <View style={{ backgroundColor: '#d1d1d1'}}>
+                                    {/*<Row style={{height: 50}}>*/}
+                                    <Text> {innerText} </Text>
+                                    <Text>Ltype {marker.ltype} </Text>
+                                    {/*</Row>*/}
+
+                                    {/*<Row style={{height: 50}}>*/}
+                                    <View style={{flexDirection:'row', alignItems:'stretch'}}>
+                                        <SimpleButton text="rock" buttonStyle={{marginTop:5, marginRight: 10, paddingRight:10, paddingBottom:30, backgroundColor: '#bbb'}}
+                                                      onPress={()=>(this.setState({ltype: 'rock'}))}/>
+                                        <SimpleButton text="paper" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
+                                                      onPress={()=>(this.setState({ltype: 'paper'}))}/>
+                                        <SimpleButton text="sci" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
+                                                      onPress={()=>(this.setState({ltype: 'scissors'}))}/>
+                                        {/*</Row>*/}
+                                    </View>
+
+                                    {/*<Row style={{height: 50}}>*/}
+                                    <View style={{flexDirection:'row', alignItems:'stretch'}}>
+                                        <SimpleButton text="place " buttonStyle={{paddingLeft: 30, paddingBottom:30, backgroundColor: '#beb'}}
+                                                      onPress={()=>(this.setState({ltype: 'scissors'}))}/>
+                                        <SimpleButton text="delete" buttonStyle={{marginLeft:20, padding: 15, marginTop:5, backgroundColor: '#bbb'}}
+                                                      onPress={()=>(this.setState({ltype: 'scissors'}))}/>
+                                    </View>
+
+                                    {/*<SimpleButton text="delete" buttonStyle={{backgroundColor: '#dac'}}*/}
+                                    {/*onPress={this.deleteButton}/>*/}
+                                    {/*</Row>*/}
+                                </View>
+                            </MapView.Callout>
+
+
+
+                        </MapView.Marker>
+
+                        <MapView.Circle radius={400}
+                                        fillColor="rgba(133, 133, 200, 0.2)"
+                                        strokeColor="rgba(0, 0, 0, 0.7)"
+                                        center={latlng}
+                        />
+                    </View>
                 )
             }
             return (
@@ -136,8 +202,6 @@ function SimpleMapMarkers({data, userId, defaultPos}){
 
 class SimpleMap extends React.Component {
 
-
-
     constructor(){
         super()
         this.state = {
@@ -153,8 +217,6 @@ class SimpleMap extends React.Component {
             },
             markers: [],
         }
-
-
     }
 
     _getLocationAsync = async () => {
@@ -196,26 +258,6 @@ class SimpleMap extends React.Component {
     }
 
 
-    renderLocalMarkers = () => {
-        if(this.props.localMarkers.length == 0){ return}
-        console.log(this.props.localMarkers);
-        let markers = this.props.localMarkers.map( (marker, i) =>
-            (
-                <View key={'onmapPress-'+i}>
-
-                    <MyMarker key={'myMarker'+i}
-                              ltype={"rock"}
-                        markerId={marker.key}
-                        latlng={marker.coordinate}
-                        //onDelete={()=>(this.deleteLocalMarker(marker.key))}
-                    />
-
-                </View>
-            )
-        )
-
-        return markers
-    }
 
     render() {
 
@@ -251,11 +293,12 @@ class SimpleMap extends React.Component {
                     onPress={this.onMapPress}
                 >
 
-                    {this.renderLocalMarkers()}
+                    {/*{this.renderLocalMarkers()}*/}
 
 
                     <SimpleMapMarkers userId={this.props.userInfo.id}
                                       data={this.props.data}
+                                      localMarkers={this.props.localMarkers}
                                       defaultPos={IR}/>
 
                     <MyLocationMapMarker />
@@ -347,6 +390,36 @@ class SimpleMap extends React.Component {
 
 
 
+
+// const placeLmarker = gql`
+// mutation($lat: Float!, $lng: Float!, $ltype: String!){
+//  placeLmarker(input: {lat: $lat, lng: $lng, ltype: $ltype}){
+//     id
+//     user_id
+//     ltype
+//     lat
+//     lng
+//   }
+// }
+// `;
+//
+//
+// const queryLmarkers = gql`
+//   query{
+//       lmarkers {
+//         id
+//         lat
+//         lng
+//         ltype
+//         user_id
+//       }
+//     }`;
+//
+// const SimpleMapWithData = compose(
+//     graphql(placeLmarker, { name: 'placeLmarkerMutation' }),
+//     graphql(placeLmarker, { name: 'data' }),
+// )(MyMarker);
+
 const SimpleMapWithData = graphql(gql`
   query{
       lmarkers {
@@ -358,6 +431,10 @@ const SimpleMapWithData = graphql(gql`
       }
     }`, { options: { notifyOnNetworkStatusChange: true } })(SimpleMap)
 
+//Can Poll too, not just props.data.refetch()
+// const FeedWithData = graphql(FeedEntries, {
+//     options: { pollInterval: 20000 },
+// })(Feed);
 
 //TODO: Just make login screen before tab navigation
 import { connect } from 'react-redux';
