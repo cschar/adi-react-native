@@ -1,11 +1,9 @@
 import { combineReducers } from 'redux'
 
 const initialState = {
-    token: '',
     foop: 'za',
-    userId: null,
-    points: null,
-    userInfo: {},
+    token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3fQ.RhJF0rumgyu_GfrA41f0PWEtC6LSmFHR9Ke4UDflZG0",
+    userInfo: {id: 7, email: 'test@z.ca', points: 12},
     localMarkers: []
 };
 
@@ -35,7 +33,7 @@ const redOne = (state = initialState, action) => {
                     ltype: 'rock',
                     lat: action.coordinate.latitude,
                     lng: action.coordinate.longitude,
-                    id: '-1',
+                    id: 'foo'+localMarkerID,
                 }
                 console.log("adding marker")
                 console.log(marker)
@@ -49,13 +47,14 @@ const redOne = (state = initialState, action) => {
             }
         case 'DELETE_MARKER':
             console.log('deleting markers', action.markerId)
+            console.log('old length', state.localMarkers.length)
 
             deleteLocalMarker = (id) => {
                 let newMarkers = state.localMarkers;
                 let markerToDeleteIndex = null;
                 for(let i=0; i < newMarkers.length; i++){
                     let m = newMarkers[i]
-                    if( m.key == id){
+                    if( m.id == id){
                         markerToDeleteIndex = i;
                         break;
                     }

@@ -50,16 +50,13 @@ function AdiFeedList({ data }) {
         return <Text>Error! {data.error.message}</Text>;
     }
 
-    // console.log(data)
-    // console.log(process.env.ADI_GRAPHQL_SERVER)
-    // console.log(config)
 
     return (
         <List >
             { data.lmarkers.map((lmarker, index) => {
 
 
-                    const badge = { value: 'rock',
+                    const badge = { value: lmarker.ltype,
                         textStyle: { color: 'orange' },
                         containerStyle: { marginTop: -2 } }
 
@@ -68,8 +65,7 @@ function AdiFeedList({ data }) {
                         key={"lmarker-key" + index.toString()}
                         hideChevron
                         title={`${lmarker.id} -- lat/lng: ${lmarker.lat.toFixed(3)}, ${lmarker.lng.toFixed(3)}`}
-                        // subtitle={`ltype ${lmarker.ltype}, user: ${lmarker.user_id}`}
-                        subtitle="subtitle"
+                        subtitle={`ltype ${lmarker.ltype}, user: ${lmarker.user_id}`}
                         badge={badge}
                     />;
                 }

@@ -30,6 +30,7 @@ import { MonoText } from '../components/StyledText';
 import MyLocationMapMarker from './MyLocationMapMarker'
 
 import MyMarker from '../components/MyMarker'
+import OtherMarker from '../components/OtherMarker'
 
 
 //NO zoom in react-native-maps, lngitude-delta instead
@@ -41,168 +42,14 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO
 // const LONGITUDE_DELTA = 0.03;
 let id = 0;
 
-function SimpleButton({text, buttonStyle, onPress}) {
-
-    return (
-        <TouchableOpacity
-            onPress={onPress}
-            style={buttonStyle}>
-            <Text>
-                {text}
-            </Text>
-        </TouchableOpacity>
-    )
-}
-
-
-function SimpleMapMarkers({data, userId, localMarkers, defaultPos}){
-    // if (data.networkStatus === 1) {
-    //     return (<View></View>)
-    //     // return <ActivityIndicator style={styles.loading} />;
-    // }
-
-
-    if (data == null || data.loading || data.error) {
-        return (
-            <MapView.Circle radius={600}
-                            key={'DEFAULTATUL'}
-                            fillColor="rgba(133, 23, 200, 0.2)"
-                            strokeColor="rgba(0, 130, 200, 0.7)"
-                            center={defaultPos}
-            />
-            )
-    }
-
-    let newMarker = {
-        id: '-1',
-        user_id: userId,
-        lat: -12,
-        lng: 12,
-        ltype: 'rock'
-    }
-
-    // let allMarkers = data.lmarkers.concat(localMarkers);
-
-    console.log(`Rendering SimpleMapMarkers: ${data.lmarkers.length} markers`);
-    return (
-        <View>
-        {data.lmarkers.map( function(marker, index) {
-
-            let markerImg = null
-            if(marker.ltype == 'rock'){
-                markerImg = rockImg
-            }
-            if(marker.ltype == 'paper'){
-                markerImg = paperImg
-            }
-            if(marker.ltype == 'scissors'){
-                markerImg = scissorsImg
-            }
-            // console.log('rendering marker', marker.id, markerImg.toString())
-
-            let latlng = {latitude: marker.lat,
-                longitude: marker.lng};
-
-            let innerText = `${marker.id} -- lat/lng:
-             ${marker.lat.toFixed(3)}, ${marker.lng.toFixed(3)}
-             ltype: ${marker.ltype}
-             user: ${marker.user_id}`;
-
-            if (marker.user_id == userId){
-                return (
-                    <View key={'myMarker-key'+index}>
-                        <MapView.Marker
-                            image={markerImg}
-                            key={marker.id + index.toString()}
-                            coordinate={latlng}
-                        >
-
-                            <MapView.Callout >
-
-                                <View style={{ backgroundColor: '#d1d1d1'}}>
-                                    {/*<Row style={{height: 50}}>*/}
-                                    <Text> {innerText} </Text>
-                                    <Text>Ltype {marker.ltype} </Text>
-                                    {/*</Row>*/}
-
-                                    {/*<Row style={{height: 50}}>*/}
-                                    <View style={{flexDirection:'row', alignItems:'stretch'}}>
-                                        <SimpleButton text="rock" buttonStyle={{marginTop:5, marginRight: 10, paddingRight:10, paddingBottom:30, backgroundColor: '#bbb'}}
-                                                      onPress={()=>(this.setState({ltype: 'rock'}))}/>
-                                        <SimpleButton text="paper" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
-                                                      onPress={()=>(this.setState({ltype: 'paper'}))}/>
-                                        <SimpleButton text="sci" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
-                                                      onPress={()=>(this.setState({ltype: 'scissors'}))}/>
-                                        {/*</Row>*/}
-                                    </View>
-
-                                    {/*<Row style={{height: 50}}>*/}
-                                    <View style={{flexDirection:'row', alignItems:'stretch'}}>
-                                        <SimpleButton text="place " buttonStyle={{paddingLeft: 30, paddingBottom:30, backgroundColor: '#beb'}}
-                                                      onPress={()=>(this.setState({ltype: 'scissors'}))}/>
-                                        <SimpleButton text="delete" buttonStyle={{marginLeft:20, padding: 15, marginTop:5, backgroundColor: '#bbb'}}
-                                                      onPress={()=>(this.setState({ltype: 'scissors'}))}/>
-                                    </View>
-
-                                    {/*<SimpleButton text="delete" buttonStyle={{backgroundColor: '#dac'}}*/}
-                                    {/*onPress={this.deleteButton}/>*/}
-                                    {/*</Row>*/}
-                                </View>
-                            </MapView.Callout>
-
-
-
-                        </MapView.Marker>
-
-                        <MapView.Circle radius={400}
-                                        fillColor="rgba(133, 133, 200, 0.2)"
-                                        strokeColor="rgba(0, 0, 0, 0.7)"
-                                        center={latlng}
-                        />
-                    </View>
-                )
-            }
-            return (
-                    <View key={"lmarkers-key"+marker.id}>
-                        <MapView.Marker
-                            image={markerImg}
-                            key={'map' + marker.id}
-                            coordinate={latlng}
-                        >
-
-                            <MapView.Callout>
-
-                                <View style={{ backgroundColor: '#d1d1d1'}}>
-                                    <View>
-                                        <Text>This is a plain view</Text>
-                                    </View>
-                                    <Text style={{ color: 'blue'}}>
-                                        {innerText}
-                                    </Text>
-                                </View>
-                            </MapView.Callout>
-
-                        </MapView.Marker>
-
-                        <MapView.Circle radius={400}
-                                        key={'lmarker-key' + index.toString()}
-                                        fillColor="rgba(255, 155, 73, 0.3)"
-                                        strokeColor="rgba(255, 155, 73, 0.7)"
-                                        center={latlng}
-                        />
-                    </View>
-                )
-            }
-        )}
-        </View>
-    )
-}
-
 
 
 
 
 class SimpleMap extends React.Component {
+    static navigationOptions = {
+        header: null,
+    };
 
     constructor(){
         super()
@@ -244,12 +91,7 @@ class SimpleMap extends React.Component {
     };
 
     componentWillReceiveProps (newProps){
-        if(newProps.data && newProps.data.lmarkers){
-            console.log('received new props w length ' + newProps.data.lmarkers.length)
-        }
-
         this.setState({gqlData: newProps.data})
-
     }
 
     componentWillMount() {
@@ -259,6 +101,21 @@ class SimpleMap extends React.Component {
     onRegionChange = (region) => {
         this.setState({position: region});
     }
+
+
+    onDeleteMarker = (id) => {
+        console.log("received on delete w id", id)
+        const trimmedMarkers = this.state.gqlData.lmarkers.filter(function(lmarker){
+            return parseInt(lmarker.id) != parseInt(id)
+        })
+
+        console.log("trimmed marker length %d -> %d",this.state.gqlData.lmarkers.length, trimmedMarkers.length)
+
+        this.state.gqlData.lmarkers = trimmedMarkers
+        this.forceUpdate();
+
+    }
+
 
     onMapPress = (e) => {
 
@@ -319,29 +176,68 @@ class SimpleMap extends React.Component {
 
         let data = 'no data'
         let simpleMarkers = null
+        let simpleMarkerCircles=null
         if(this.props.data && this.props.data.lmarkers){
             data = this.props.data.lmarkers.length
 
-            console.log("========= simple markers " + this.state.gqlData.lmarkers.length)
-            simpleMarkers = this.state.gqlData.lmarkers.map( function(marker, index) {
+            simpleMarkers = this.state.gqlData.lmarkers.map( (marker, i) => {
 
                 let latlng = {
                     latitude: marker.lat,
                     longitude: marker.lng
                 };
 
-                return (
-                    <View key={'myMarker-key' + index}>
-                        <MapView.Marker
-                                title="fooper"
-                                description="blabl"
-                            image={rockImg}
-                            key={marker.id + index.toString()}
-                            coordinate={latlng}
+                //!!!!!!!!! if this is wrapped in a view it wont rerender
+
+                if(marker.user_id == this.props.userInfo.id){
+                    return (
+                        <MyMarker key={'mymaerker-'+i}
+                    latlng={latlng}
+                    title="foop"
+                    markerId={marker.id}
+                    marker={marker}
+                    onDelete={() => this.onDeleteMarker(marker.id)}
                         />
-                    </View>
-                )
+
+                    )
+                }
+                    return(
+                    <OtherMarker
+                        key={'othermarker-'+i}
+                        marker={marker}
+                            >
+                    </OtherMarker>
+                    )
             })
+
+            simpleMarkerCircles = this.state.gqlData.lmarkers.map( (marker, i) => {
+
+                let latlng = {
+                    latitude: marker.lat,
+                    longitude: marker.lng
+                };
+
+                if(marker.user_id == this.props.userInfo.id){
+                    return(
+                    <MapView.Circle key={"marker-circle"+marker.id}
+                                    radius={200}
+                                    fillColor="rgba(133, 133, 200, 0.2)"
+                                    strokeColor="rgba(0, 0, 0, 0.7)"
+                                    center={latlng}
+                    />
+                    )
+                }
+                //!!!!!!!!! if this is wrapped in a view it wont rerender
+                return (
+                <MapView.Circle radius={200}
+            key={'i dont work' + marker.id}
+            fillColor="rgba(233, 87, 87, 0.2)"
+            strokeColor="rgba(200, 130, 100, 0.7)"
+            center={latlng}
+            />
+
+                )
+                })
         }
 
         let map = (<Text> Loading.... </Text>)
@@ -362,31 +258,15 @@ class SimpleMap extends React.Component {
                     onPress={this.onMapPress}
                 >
 
-
                     {simpleMarkers}
+                    {simpleMarkerCircles}
 
-                    {this.props.localMarkers.map( function(marker, i) {
-
-                    let latlng = {
-                    latitude: marker.lat,
-                    longitude: marker.lng
-                };
-
-                    return (
-                        <MyMarker key={'mymaerker-'+i}
-                                  latlng={latlng}
-                                  title="foop"
-                                  markerId={marker.id}
-                                  marker={marker} />
-                    )
-                })
-                    }
-
-                    {/*<SimpleMapMarkers userId={this.props.userInfo.id}*/}
-                                      {/*data={this.props.data}*/}
-                                      {/*localMarkers={this.props.localMarkers}*/}
-                                      {/*defaultPos={IR}/>*/}
-
+                    <MapView.Circle radius={200}
+                                    key={'mylocation'}
+                                    fillColor="rgba(87, 87, 233, 0.2)"
+                                    strokeColor="rgba(87, 130, 233, 0.7)"
+                                    center={this.state.position}
+                    />
                     <MyLocationMapMarker />
 
 
@@ -395,10 +275,15 @@ class SimpleMap extends React.Component {
             )
         }
 
-        console.log("Rendering SimpleMap: ")
+
         if (this.props.data){
             if (this.props.data.lmarkers){
-                console.log(this.props.data.lmarkers.length, "lmarkers in this.props.data")
+                let markerNums = this.props.data.lmarkers.length + " lmarkers in this.props.data"
+                console.log("Rendering SimpleMap: ", markerNums)
+
+            }
+            if( this.props.data.user){
+                console.log(this.props.data.user)
             }
         }
 
@@ -458,17 +343,22 @@ class SimpleMap extends React.Component {
             </TouchableOpacity>)
         }
 
-
+        let gqlDataLoaded = null
+        if(this.props.data.loading){
+            gqlDataLoaded = ( <Text> Loading data </Text>)
+        }else{
+            // gqlDataLoaded = (<Text> {'lmarker length: ' + this.props.data.lmarkers.length} </Text>)
+        }
         return (
             <View style={styles.container}>
-                <View style={{ height: '55%', borderWidth: 1 }}>
+                <View style={{ height: '65%', borderWidth: 1 }}>
                 {map}
                 </View>
                 <ScrollView
                     style={{backgroundColor: '#d2caac', borderWidth: 1 }}
                     contentContainerStyle={styles.contentContainer}>
 
-                    <Text> {'lmarker length: ' + this.state.gqlData.lmarkers.length} </Text>
+                    {gqlDataLoaded}
                     <View style={{backgroundColor: '#fff8f9',
                                   alignItems: 'flex-start', flexDirection: 'row'}}>
                         {action1Button}
@@ -510,22 +400,21 @@ class SimpleMap extends React.Component {
 
     action2Press = () => {
         console.log('refetching lmarker data')
-
-        let aa = this.props.data.refetch()
-        console.log(aa)
-        console.log('and length')
-        console.log(this.props.data.lmarkers.length)
-        // this._getLocationAsync()
+        this.props.data.refetch()
+        // this.props.data.refetch().then(function(data){
+        //     console.log("[][][] Refetched data, setting state")
+        //     this.setState({gqlData: data})
+        // }.bind(this))
     }
 
     action3Press = () => {
-        console.log('forceUpdate');
-        // this.forceUpdate();
-        this.props.renderHandler()
+        console.log('forceUpdate w props data lmarkers length ', this.props.data.lmarkers.length);
+        this.setState({gqlData: this.props.data})
+        this.forceUpdate();
 
     }
 
-    actionPlacePress = (ltype = 'rock') => {
+    actionPlacePress = (ltype) => {
         this.setState({placeMarkerEnabled: !this.state.placeMarkerEnabled,
         ltypeToPlace: ltype})
 
@@ -536,52 +425,6 @@ class SimpleMap extends React.Component {
 
 
 
-const placeLmarker = gql`
-mutation($lat: Float!, $lng: Float!, $ltype: String!){
- placeLmarker(input: {lat: $lat, lng: $lng, ltype: $ltype}){
-    id
-    user_id
-    ltype
-    lat
-    lng
-  }
-}
-`;
-
-
-const queryLmarkers = gql`
-  query{
-      lmarkers {
-        id
-        lat
-        lng
-        ltype
-        user_id
-      }
-    }`;
-
-const SimpleMapWithData = compose(
-    graphql(placeLmarker, { name: 'placeLmarkerMutation' }),
-    //name will be data by default this.props.data
-    graphql(queryLmarkers)
-    // graphql(queryLmarkers,{options: { pollInterval: 5000 }})
-)(SimpleMap);
-
-// const SimpleMapWifthData = graphql(gql`
-//   query{
-//       lmarkers {
-//         id
-//         lat
-//         lng
-//         ltype
-//         user_id
-//       }
-//     }`, { options: { notifyOnNetworkStatusChange: true } })(SimpleMap)
-
-//Can Poll too, not just props.data.refetch()
-// const FeedWithData = graphql(FeedEntries, {
-//     options: { pollInterval: 3000 },
-// })(Feed);
 
 //TODO: Just make login screen before tab navigation
 import { connect } from 'react-redux';
@@ -603,41 +446,71 @@ const mapDispatchToProps = (dispatch) => {
     }
 };
 
-const SimpleMapContainer =  connect(mapStateToProps,mapDispatchToProps)(SimpleMapWithData)
+
+// export default SimpleMapContainer = connect(mapStateToProps,mapDispatchToProps)(SimpleMap)
+const SimpleMapContainer = connect(mapStateToProps,mapDispatchToProps)(SimpleMap)
 
 
-export default class MapScreen extends React.Component {
-    static navigationOptions = {
-        header: null,
-    };
-
-
-    constructor(){
-        super()
-        this.state = {
-            foo: 'boo'
-        }
-    }
-    renderHandler = () =>{
-        this.setState({
-            foo: 'varb' + this.state.foo
-        })
-        this.refs.mapContainer.forceUpdate();
-    }
-
-    render() {
-        return (
-            <View style={styles.container}>
-
-                <SimpleMapContainer ref='mapContainer' renderHandler={this.renderHandler}
-
-                />
-                <Text> {this.state.foo} </Text>
-            </View>
-        );
-    }
-
+const placeLmarker = gql`
+mutation($lat: Float!, $lng: Float!, $ltype: String!){
+ placeLmarker(input: {lat: $lat, lng: $lng, ltype: $ltype}){
+    id
+    user_id
+    ltype
+    lat
+    lng
+  }
 }
+`;
+
+
+const queryLmarkers2 = gql`
+  query($id: Int){
+      lmarkers {
+        id
+        lat
+        lng
+        ltype
+        user_id
+      }
+      user(id: $id){
+        points
+      }
+    }`;
+
+const queryLmarkers = gql`
+  query{
+      lmarkers {
+        id
+        lat
+        lng
+        ltype
+        user_id
+      }
+      user(id: 7){
+        points
+      }
+    }`;
+
+const SimpleMapWithData = compose(
+    graphql(placeLmarker, { name: 'placeLmarkerMutation' }),
+    //name will be data by default this.props.data
+    graphql(queryLmarkers, {
+        options: (props) => ({
+            variables: {
+                id : 7
+                // id: props.userInfo ? parseInt(props.userInfo.id) : 7,
+                // height: props.size,
+            },
+            // pollInterval : 5000
+            })
+    })
+    // graphql(queryLmarkers,{options: { pollInterval: 5000 }})
+)(SimpleMapContainer);
+
+export default SimpleMapWithData
+
+
 
 const styles = StyleSheet.create({
     container: {

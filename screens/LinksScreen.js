@@ -12,6 +12,8 @@ const AdiLmarkersWithData = graphql(gql`
         id
         lat
         lng
+        ltype
+        user_id
       }
     }`, { options: { notifyOnNetworkStatusChange: true } })(AdiLmarkersFeed)
 
@@ -25,7 +27,6 @@ export default class LinksScreen extends React.Component {
     return (
 
       <ScrollView style={styles.container}>
-        <Text> dummy link </Text>
         <AdiLmarkersWithData/>
       </ScrollView>
     );

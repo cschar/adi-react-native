@@ -21,7 +21,7 @@ import { MapView } from 'expo';
 
 import rockImg from '../assets/images/rock3.png';
 import paperImg from '../assets/images/paper3.png';
-import scissorsImg from '../assets/images/scissors2.png';
+import scissorsImg from '../assets/images/scissors3.png';
 
 import store from '../Stores.js'
 
@@ -46,8 +46,12 @@ class MyMarker extends React.Component {
     constructor(props){
         super()
         this.state = {
-            ltype: props.ltype
-
+            ltype: props.marker.ltype,
+            lat: props.marker.lat,
+            lng: props.marker.lng,
+            id: props.marker.id,
+            user_id: props.marker.user_id,
+            deleting: false
         }
     }
 
@@ -61,17 +65,37 @@ class MyMarker extends React.Component {
         })
             .then(({data}) => {
                 console.log('got data', data);
+                if(data.removeLmarker && data.removeLmarker == 'success'){
 
+                }
             }).catch((error) => {
             console.log('there was an error sending the query', error);
         });
     }
 
-    deleteButton = () => {
-        store.dispatch({
-            type:'DELETE_MARKER',
-            markerId: this.props.markerId
+    deleteButton = (id) => {
+        if( id == -1){ console.log("not set"); return}
+        console.log("deleting marker")
+        this.setState({deleting: true})
+        // this.marker1.hideCallout();
+        this.props.removeLmarkerMutation({
+            variables: {
+                id: parseInt(id)
+            }
         })
+            .then(({data}) => {
+                console.log('got data', data);
+                this.setState({deleting: false})
+                this.props.onDelete()
+
+            }).catch((error) => {
+            this.setState({deleting: false})
+            console.log('there was an error sending the query', error);
+        });
+        // store.dispatch({
+        //     type:'DELETE_MARKER',
+        //     markerId: this.props.marker.id
+        // })
     }
 
     render(){
@@ -90,53 +114,53 @@ class MyMarker extends React.Component {
             markerImg = scissorsImg
         }
 
-        console.log("My Marker rendering with markerId: " + this.props.markerId)
+
+        let calloutView = null
+        if (this.state.deleting){
+            calloutView = (<ActivityIndicator color="green"
+                                              size="large"/>)
+        }else{
+            calloutView = (
+                <View>
+                    <View style={{flexDirection:'row', alignItems:'stretch'}}>
+                        <SimpleButton text="rock" buttonStyle={{marginTop:5, marginRight: 10, paddingRight:10, paddingBottom:30, backgroundColor: '#bbb'}}
+                                      onPress={()=>(this.setState({ltype: 'rock'}))}/>
+                        <SimpleButton text="paper" buttonStyle={{marginTop:5,marginRight: 10, paddingRight:10, paddingBottom:30, backgroundColor: '#bbb'}}
+                                      onPress={()=>(this.setState({ltype: 'paper'}))}/>
+                        <SimpleButton text="scissors" buttonStyle={{marginTop:5,marginRight: 10, paddingRight:10, paddingBottom:30, backgroundColor: '#bbb'}}
+                                      onPress={()=>(this.setState({ltype: 'scissors'}))}/>
+                    </View>
+
+                    <View style={{flexDirection:'row', alignItems:'stretch'}}>
+                        <SimpleButton text="place " buttonStyle={{paddingLeft: 30, paddingBottom:30, backgroundColor: '#beb'}}
+                                      onPress={this.placeLMarkerButton}/>
+                        <SimpleButton text="delete" buttonStyle={{marginLeft:20, padding: 15, marginTop:5, backgroundColor: '#bbb'}}
+                                      onPress={() => this.deleteButton(this.state.id)}/>
+                    </View>
+                </View>
+            )
+        }
         return (
-            <View>
                 <MapView.Marker
+                    ref={ref => { this.marker1 = ref; }}
                     title={this.props.markerId.toString()}
                     image={markerImg}
-                    key={this.props.markerId }
+                    key={'Mymarker=' + this.props.markerId }
                     coordinate={this.props.latlng}
-                    description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation" // eslint-disable-line max-len
                 >
 
+
                     <MapView.Callout
-                        // style={{ height: height/4, width: width/2 }}
                     >
 
                         <View style={{ backgroundColor: '#d1d1d1'}}>
-                            {/*<Row style={{height: 50}}>*/}
                             <Text>Current Lmarker at {this.props.latlng.latitude.toFixed(3)}, {this.props.latlng.longitude.toFixed(3)} </Text>
                             <Text>Ltype {this.state.ltype} </Text>
-                            {/*</Row>*/}
+                            <Text> {`user_id ${this.state.user_id}  id: ${this.state.id}`} </Text>
 
-                            {/*<Row style={{height: 50}}>*/}
-                            <View style={{flexDirection:'row'}}>
-                            <SimpleButton text="rock" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
-                                          onPress={()=>(this.setState({ltype: 'rock'}))}/>
-                            <SimpleButton text="paper" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
-                                          onPress={()=>(this.setState({ltype: 'paper'}))}/>
-                            <SimpleButton text="sci" buttonStyle={{marginTop:5, paddingBottom:30, backgroundColor: '#bbb'}}
-                                          onPress={()=>(this.setState({ltype: 'scissors'}))}/>
-                            {/*</Row>*/}
-                            </View>
+                            {calloutView}
 
-                            {/*<Row style={{height: 50}}>*/}
-                            <Button backgroundColor={'#bbb'}
-                                    fontSize={18}
-                                    icon={{name: 'settings-input-component', size:20}}
-                                    title={'place lmarker'}
-                                    onPress={this.placeLMarkerButton}/>
-                            <Button backgroundColor={'#f99'}
-                                    fontSize={10}
-                                    icon={{name: 'settings-input-component', size:10}}
-                                    title={'remove'}
-                                    onPress={this.deleteButton}/>
 
-                            {/*<SimpleButton text="delete" buttonStyle={{backgroundColor: '#dac'}}*/}
-                                          {/*onPress={this.deleteButton}/>*/}
-                            {/*</Row>*/}
                         </View>
                     </MapView.Callout>
 
@@ -144,12 +168,7 @@ class MyMarker extends React.Component {
 
                 </MapView.Marker>
 
-                <MapView.Circle radius={400}
-                                fillColor="rgba(133, 133, 200, 0.2)"
-                                strokeColor="rgba(0, 0, 0, 0.7)"
-                                center={this.props.latlng}
-                />
-            </View>
+
         )
     }
 }
@@ -165,8 +184,14 @@ mutation($lat: Float!, $lng: Float!, $ltype: String!){
   }
 }
 `;
+const removeLmarker = gql`
+mutation($id: Int!){ 
+ removeLmarker(id:$id)
+}
+`;
 const MyMarkerWithMutations = compose(
     graphql(placeLmarker, { name: 'placeLmarkerMutation' }),
+    graphql(removeLmarker, { name: 'removeLmarkerMutation' }),
 )(MyMarker);
 
 

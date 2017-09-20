@@ -20,6 +20,7 @@ import papergif from '../assets/images/paper2.gif';
 const MessageBarAlert = require('react-native-message-bar').MessageBar;
 const MessageBarManager = require('react-native-message-bar').MessageBarManager;
 
+import { Col, Row, Grid } from "react-native-easy-grid";
 // import {MessageBarAlert, MessageBarManager} from 'react-native-message-bar';
 import config from '../config.js'
 
@@ -174,7 +175,7 @@ export class LoginScreen extends React.Component {
                     <Text> {this.props.token} </Text>
                     <Text> ID: {this.props.userInfo.id} </Text>
                     <Text> Email: {this.props.userInfo.email} </Text>
-                    <Text> Points: 0 </Text>
+                    {/*<Text> Points: 0 </Text>*/}
 
                     <Button backgroundColor={'#cd9258'}
                             onPress={this.logout}

@@ -75,7 +75,7 @@ class RootNavigator extends React.Component {
           console.log(reactClass.getToken())
           if (reactClass.getToken() != null && reactClass.getToken() != '') {
               req.options.headers['authorization'] = 'bearer ' + reactClass.getToken()
-              console.log('[Authorization Header]: ', req.options.headers['authorization'])
+              // console.log('[Authorization Header]: ', req.options.headers['authorization'])
           }
 
           next();

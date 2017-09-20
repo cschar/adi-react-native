@@ -36,34 +36,31 @@ class OtherMarker extends React.Component{
 
     render(){
         let markerImg = null
-        if(this.props.lmarker.ltype == 'rock'){
+        if(this.props.marker.ltype == 'rock'){
             markerImg = rockImg
         }
-        if(this.props.lmarker.ltype == 'paper'){
+        if(this.props.marker.ltype == 'paper'){
             markerImg = paperImg
         }
-        if(this.props.lmarker.ltype == 'scissors'){
+        if(this.props.marker.ltype == 'scissors'){
             markerImg = scissorsImg
         }
-        let marker = this.props.lmarker
+        let marker = this.props.marker
 
-        let latlng = {latitude: this.props.lmarker.lat,
-            longitude: this.props.lmarker.lng};
+        let latlng = {latitude: marker.lat,
+            longitude: marker.lng};
 
-        let innerText = `${marker.id} -- lat/lng:
-             ${marker.lat.toFixed(3)}, ${marker.lng.toFixed(3)}`;
+        let innerText = `${marker.ltype} -- lat/lng:
+             ${marker.lat.toFixed(3)}, ${marker.lng.toFixed(3)}
+             ID: ${marker.id},  USER_ID: ${marker.user_id} `;
 
         return (
-            <View>
                 <MapView.Marker
-                    title={this.props.lmarker.id}
                     image={markerImg}
                     // key={marker.id + index.toString()}
                     coordinate={latlng}
                 >
-
                     <MapView.Callout>
-
                         <View style={{ backgroundColor: '#d1d1d1'}}>
                             <Text style={{ color: 'blue'}}>
                                 {innerText}
@@ -71,18 +68,7 @@ class OtherMarker extends React.Component{
                             </Text>
                         </View>
                     </MapView.Callout>
-
-
-
                 </MapView.Marker>
-
-                <MapView.Circle radius={400}
-                                // key={'lmarker-key' + index.toString()}
-                                fillColor="rgba(133, 133, 200, 0.2)"
-                                strokeColor="rgba(0, 0, 0, 0.7)"
-                                center={latlng}
-                />
-            </View>
         )
     }
 }

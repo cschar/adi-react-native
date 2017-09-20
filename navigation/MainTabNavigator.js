@@ -9,23 +9,29 @@ import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import MapScreen from '../screens/MapScreen'
+import MapScreen2 from '../screens/MapScreen2'
 import MyLocationMapMarker from '../screens/MyLocationMapMarker'
 import LoginScreenWithMutations from "../screens/LoginScreen";
+import LeaderBoardScreen from "../screens/LeaderBoardScreen";
 
 export default TabNavigator(
   {
       Home: {
           screen: LoginScreenWithMutations,
       },
-      MAP: {
-          screen: MapScreen,
+      // MAP: {
+      //     screen: MapScreen,
+      // },
+
+      MAP2: {
+          screen: MapScreen2,
       },
 
     Links: {
       screen: LinksScreen,
     },
-    Settings: {
-      screen: SettingsScreen,
+    LeaderBoard: {
+      screen: LeaderBoardScreen,
     },
 
   },
@@ -45,11 +51,15 @@ export default TabNavigator(
               ? `ios-barcode${focused ? '' : '-outline'}`
               : 'md-link';
             break;
+            case 'MAP2':
+                iconName = Platform.OS === 'ios'
+                    ? `ion-magnet${focused ? '' : '-outline'}`
+                    : 'md-view_module';
           case 'MAP':
               iconName = Platform.OS === 'ios'
                   ? `ion-magnet${focused ? '' : '-outline'}`
                   : 'md-view_module';
-          case 'Settings':
+          case 'LeaderBoard':
             iconName = Platform.OS === 'ios'
               ? `ios-cloud-circle${focused ? '' : '-outline'}`
               : 'md-view_module';
