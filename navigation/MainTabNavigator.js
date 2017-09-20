@@ -8,7 +8,7 @@ import Colors from '../constants/Colors';
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import MapScreen from '../screens/MapScreen'
+
 import MapScreen2 from '../screens/MapScreen2'
 import MyLocationMapMarker from '../screens/MyLocationMapMarker'
 import LoginScreenWithMutations from "../screens/LoginScreen";
@@ -19,9 +19,6 @@ export default TabNavigator(
       Home: {
           screen: LoginScreenWithMutations,
       },
-      // MAP: {
-      //     screen: MapScreen,
-      // },
 
       MAP2: {
           screen: MapScreen2,

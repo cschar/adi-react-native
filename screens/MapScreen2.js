@@ -57,7 +57,6 @@ class SimpleMap extends React.Component {
             gqlData: {lmarkers: []},
             dumps: '',
             placeMarkerEnabled: false,
-            placeMyMarkerEnabled: false,
             ltypeToPlace: 'rock',
 
             location: null,
@@ -91,6 +90,9 @@ class SimpleMap extends React.Component {
     };
 
     componentWillReceiveProps (newProps){
+        console.log("!!!!!!!!!!!!! new props received")
+        console.log(newProps.data)
+
         this.setState({gqlData: newProps.data})
     }
 
@@ -119,12 +121,23 @@ class SimpleMap extends React.Component {
 
     onMapPress = (e) => {
 
-        if(this.state.placeMyMarkerEnabled) {
-            this.props.dispatchAddMarker(e.nativeEvent.coordinate);
-        }
+        // if(this.state.placeMyMarkerEnabled) {
+        //     this.props.dispatchAddMarker(e.nativeEvent.coordinate);
+        // }
 
         console.log('pressed map')
         if(this.state.placeMarkerEnabled) {
+
+            let tmpMarker = {
+                id: "-1",
+                lat: e.nativeEvent.coordinate.latitude,
+                lng: e.nativeEvent.coordinate.longitude,
+                user_id: this.props.userInfo.id,
+                ltype: 'rock'
+            }
+
+            this.state.gqlData.lmarkers.push(tmpMarker)
+            this.forceUpdate();
 
             let latlang = e.nativeEvent.coordinate
             // let ltype = 'rock'
@@ -136,16 +149,12 @@ class SimpleMap extends React.Component {
                 })
                 .then(({ data }) => {
                     console.log('got data', data);
-                    // this.setState({loading: false})
 
-                    if(data.createUser && data.createUser.token) {
-
-                        // this.props.dispatchSetUserInfo({userInfo:data.createUser.user, token: data.createUser.token});
-                    }
+                    //could link up this mutation to a refetch afterwards
+                    this.props.data.refetch()
 
                 }).catch((error) => {
-                // this.setState({loading: false,
-                //     signupErrorMessage: 'Error invalid email/password'})
+
                 console.log('there was an error sending the query', error);
 
 
@@ -174,14 +183,20 @@ class SimpleMap extends React.Component {
             currentLocation = JSON.stringify(this.state.location);
         }
 
-        let data = 'no data'
+        let gqlDataText = (<Text> Loading Data </Text>)
         let simpleMarkers = null
         let simpleMarkerCircles=null
         if(this.props.data && this.props.data.lmarkers){
-            data = this.props.data.lmarkers.length
+            let text0 = 'signed as user :' +  this.props.data.user.id
+            let text1 = 'data.lmarker length:' +  this.props.data.lmarkers.length
+            let text2 = 'data.user.points : ' + this.props.data.user.points
+            gqlDataText = (<View>
+                <Text> {text0} </Text>
+                <Text> {text1} </Text>
+                <Text> {text2} </Text>
+            </View>)
 
-            simpleMarkers = this.state.gqlData.lmarkers.map( (marker, i) => {
-
+            simpleMarkers = this.props.data.lmarkers.map( (marker, i) => {
                 let latlng = {
                     latitude: marker.lat,
                     longitude: marker.lng
@@ -191,9 +206,9 @@ class SimpleMap extends React.Component {
 
                 if(marker.user_id == this.props.userInfo.id){
                     return (
-                        <MyMarker key={'mymaerker-'+i}
+                        <MyMarker key={'mymaerker-'+marker.id}
                     latlng={latlng}
-                    title="foop"
+
                     markerId={marker.id}
                     marker={marker}
                     onDelete={() => this.onDeleteMarker(marker.id)}
@@ -203,14 +218,13 @@ class SimpleMap extends React.Component {
                 }
                     return(
                     <OtherMarker
-                        key={'othermarker-'+i}
+                        key={'othermarker-'+marker.id}
                         marker={marker}
                             >
                     </OtherMarker>
                     )
             })
-
-            simpleMarkerCircles = this.state.gqlData.lmarkers.map( (marker, i) => {
+            simpleMarkerCircles = this.props.data.lmarkers.map( (marker, i) => {
 
                 let latlng = {
                     latitude: marker.lat,
@@ -287,20 +301,13 @@ class SimpleMap extends React.Component {
             }
         }
 
-        let action1Button = (<TouchableOpacity
-                onPress={this.action1Press}
-                style={styles.action1Link}>
-                <Text style={styles.helpLinkText}>
-                    Place marker
-                </Text>
-            </TouchableOpacity>)
 
         let placeRPSButtons = (<View style={{backgroundColor: '#fff8f9',
             alignItems: 'flex-start', flexDirection: 'row'}}>
 
             <TouchableOpacity
                 onPress={() => this.actionPlacePress('rock')}
-                style={styles.action2Link}>
+                style={styles.action1Link}>
                 <Text style={styles.helpLinkText}>
                     rock
                 </Text>
@@ -308,7 +315,7 @@ class SimpleMap extends React.Component {
 
             <TouchableOpacity
                 onPress={() => this.actionPlacePress('paper')}
-                style={styles.action2Link}>
+                style={styles.action1Link}>
                 <Text style={styles.helpLinkText}>
                     paper
                 </Text>
@@ -316,23 +323,14 @@ class SimpleMap extends React.Component {
 
             <TouchableOpacity
                 onPress={() => this.actionPlacePress('scissors')}
-                style={styles.action2Link}>
+                style={styles.action1Link}>
                 <Text style={styles.helpLinkText}>
-                    scis
+                    scissors
                 </Text>
             </TouchableOpacity>
 
         </View>)
 
-
-        if(this.state.placeMyMarkerEnabled) {
-            action1Button = (<TouchableOpacity
-                onPress={this.action1Press}
-                style={styles.action1LinkEnabled}>
-                <Text>Enabled! Place your marker on map
-                </Text>
-            </TouchableOpacity>)
-        }
 
          if(this.state.placeMarkerEnabled){
             placeRPSButtons = (<TouchableOpacity
@@ -343,12 +341,6 @@ class SimpleMap extends React.Component {
             </TouchableOpacity>)
         }
 
-        let gqlDataLoaded = null
-        if(this.props.data.loading){
-            gqlDataLoaded = ( <Text> Loading data </Text>)
-        }else{
-            // gqlDataLoaded = (<Text> {'lmarker length: ' + this.props.data.lmarkers.length} </Text>)
-        }
         return (
             <View style={styles.container}>
                 <View style={{ height: '65%', borderWidth: 1 }}>
@@ -358,10 +350,9 @@ class SimpleMap extends React.Component {
                     style={{backgroundColor: '#d2caac', borderWidth: 1 }}
                     contentContainerStyle={styles.contentContainer}>
 
-                    {gqlDataLoaded}
+                    {gqlDataText}
                     <View style={{backgroundColor: '#fff8f9',
                                   alignItems: 'flex-start', flexDirection: 'row'}}>
-                        {action1Button}
 
                         <TouchableOpacity
                             onPress={this.action2Press}
@@ -370,16 +361,6 @@ class SimpleMap extends React.Component {
                                 refresh
                             </Text>
                         </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={this.action3Press}
-                            style={styles.action2Link}>
-                            <Text style={styles.helpLinkText}>
-                                force update
-                            </Text>
-                        </TouchableOpacity>
-
-
 
                     </View>
 
@@ -393,10 +374,6 @@ class SimpleMap extends React.Component {
         );
     }
 
-    action1Press = () => {
-        console.log('action 1')
-        this.setState({placeMyMarkerEnabled: !this.state.placeMyMarkerEnabled})
-    }
 
     action2Press = () => {
         console.log('refetching lmarker data')
@@ -407,12 +384,6 @@ class SimpleMap extends React.Component {
         // }.bind(this))
     }
 
-    action3Press = () => {
-        console.log('forceUpdate w props data lmarkers length ', this.props.data.lmarkers.length);
-        this.setState({gqlData: this.props.data})
-        this.forceUpdate();
-
-    }
 
     actionPlacePress = (ltype) => {
         this.setState({placeMarkerEnabled: !this.state.placeMarkerEnabled,
@@ -488,9 +459,11 @@ const queryLmarkers = gql`
         user_id
       }
       user(id: 7){
+        id
         points
       }
     }`;
+
 
 const SimpleMapWithData = compose(
     graphql(placeLmarker, { name: 'placeLmarkerMutation' }),
@@ -499,16 +472,44 @@ const SimpleMapWithData = compose(
         options: (props) => ({
             variables: {
                 id : 7
+                //TODO: replace this with the wrappers this.props.userID
                 // id: props.userInfo ? parseInt(props.userInfo.id) : 7,
                 // height: props.size,
             },
-            // pollInterval : 5000
+            //TODO: AWesome!
+            // pollInterval : 10000
             })
     })
     // graphql(queryLmarkers,{options: { pollInterval: 5000 }})
 )(SimpleMapContainer);
 
-export default SimpleMapWithData
+// export default SimpleMapWithData
+
+class MapWrapper extends React.Component{
+
+    render(){
+        return (
+            <SimpleMapWithData userID={this.props.userID} />
+        )
+    }
+}
+
+
+
+//TODO: Just make login screen before tab navigation
+// import { connect } from 'react-redux';
+const mapStateToProps2 = function(store) {
+    return {
+        token: store.redOne.token,
+        userInfo: store.redOne.userInfo,
+        localMarkers: store.redOne.localMarkers
+    };
+}
+
+
+
+// export default SimpleMapContainer = connect(mapStateToProps,mapDispatchToProps)(SimpleMap)
+export default MapWrapperContainer = connect(mapStateToProps2)(MapWrapper)
 
 
 
@@ -536,11 +537,14 @@ const styles = StyleSheet.create({
     },
     action1Link: {
         paddingVertical: 15,
+        paddingLeft: 15,
+        marginRight:20,
         backgroundColor: '#f1f1a1'
     },
     action2Link: {
         paddingVertical: 15,
         paddingLeft: 15,
+        paddingRight: 15,
         marginLeft:10,
         backgroundColor: '#62cd91'
     },

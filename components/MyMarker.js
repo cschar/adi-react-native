@@ -46,6 +46,7 @@ class MyMarker extends React.Component {
     constructor(props){
         super()
         this.state = {
+            zIndex: 0,
             ltype: props.marker.ltype,
             lat: props.marker.lat,
             lng: props.marker.lng,
@@ -58,9 +59,9 @@ class MyMarker extends React.Component {
     placeLMarkerButton = () => {
         this.props.placeLmarkerMutation({
             variables: {
-                lat: this.props.latlng.latitude,
-                lng: this.props.latlng.longitude,
-                ltype: this.state.ltype
+                lat: this.props.marker.lat,
+                lng: this.props.marker.lng,
+                ltype: this.state.marker.ltype
             }
         })
             .then(({data}) => {
@@ -116,7 +117,14 @@ class MyMarker extends React.Component {
 
 
         let calloutView = null
-        if (this.state.deleting){
+        if(this.state.id == '-1'){
+            calloutView = (<View>
+                <Text> Temp marker, placing on server </Text>
+            <ActivityIndicator color="green"
+                                              size="large"/>
+            </View>)
+        }
+        else if (this.state.deleting){
             calloutView = (<ActivityIndicator color="green"
                                               size="large"/>)
         }else{
@@ -147,6 +155,7 @@ class MyMarker extends React.Component {
                     image={markerImg}
                     key={'Mymarker=' + this.props.markerId }
                     coordinate={this.props.latlng}
+
                 >
 
 
